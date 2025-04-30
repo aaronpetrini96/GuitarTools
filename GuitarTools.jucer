@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="UwZ0mG" name="GuitarTools" projectType="audioplug" useAppConfig="0"
+              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" companyName="Aaron Petrini"
+              cppLanguageStandard="latest">
+  <MAINGROUP id="dcQ1Q0" name="GuitarTools">
+    <GROUP id="{9FE85DB9-FEF9-D00B-7F4E-44BB06F723AF}" name="Source">
+      <GROUP id="{713458A5-CBDF-5E76-6944-B0118BBEE9AC}" name="GUI">
+        <FILE id="xgfSKr" name="Button.cpp" compile="1" resource="0" file="Source/GUI/Button.cpp"/>
+        <FILE id="QJBtPO" name="Button.h" compile="0" resource="0" file="Source/GUI/Button.h"/>
+        <FILE id="Ww4xca" name="HorizontalSlider.cpp" compile="1" resource="0"
+              file="Source/GUI/HorizontalSlider.cpp"/>
+        <FILE id="YPFrEm" name="HorizontalSlider.h" compile="0" resource="0"
+              file="Source/GUI/HorizontalSlider.h"/>
+        <FILE id="kIgT3A" name="ImgButton.cpp" compile="1" resource="0" file="Source/GUI/ImgButton.cpp"/>
+        <FILE id="JCxqpl" name="ImgButton.h" compile="0" resource="0" file="Source/GUI/ImgButton.h"/>
+        <FILE id="EeHyKt" name="LevelMeter.cpp" compile="1" resource="0" file="Source/GUI/LevelMeter.cpp"/>
+        <FILE id="afcFSp" name="LevelMeter.h" compile="0" resource="0" file="Source/GUI/LevelMeter.h"/>
+        <FILE id="YSESCh" name="LookAndFeel.cpp" compile="1" resource="0" file="Source/GUI/LookAndFeel.cpp"/>
+        <FILE id="sWnK03" name="LookAndFeel.h" compile="0" resource="0" file="Source/GUI/LookAndFeel.h"/>
+        <FILE id="Jt29Ft" name="Measurement.h" compile="0" resource="0" file="Source/GUI/Measurement.h"/>
+        <FILE id="OHkdWh" name="OptionBox.cpp" compile="1" resource="0" file="Source/GUI/OptionBox.cpp"/>
+        <FILE id="USyMVc" name="OptionBox.h" compile="0" resource="0" file="Source/GUI/OptionBox.h"/>
+        <FILE id="xUmPlB" name="RotaryKnob.cpp" compile="1" resource="0" file="Source/GUI/RotaryKnob.cpp"/>
+        <FILE id="KWPlNq" name="RotaryKnob.h" compile="0" resource="0" file="Source/GUI/RotaryKnob.h"/>
+      </GROUP>
+      <GROUP id="{BEEC5DC6-4F3B-B210-B68B-1200B7B78109}" name="Assets">
+        <FILE id="DnfOSq" name="Bypass.png" compile="0" resource="1" file="Source/Assets/Bypass.png"/>
+        <FILE id="vGLWG6" name="Lato-Medium.ttf" compile="0" resource="1" file="Source/Assets/Lato-Medium.ttf"/>
+        <FILE id="IbE4t0" name="Lato-Regular.ttf" compile="0" resource="1"
+              file="Source/Assets/Lato-Regular.ttf"/>
+      </GROUP>
+      <FILE id="yQ7tta" name="PluginProcessor.cpp" compile="1" resource="0"
+            file="Source/PluginProcessor.cpp"/>
+      <FILE id="VeP2dT" name="PluginProcessor.h" compile="0" resource="0"
+            file="Source/PluginProcessor.h"/>
+      <FILE id="VAmKgS" name="PluginEditor.cpp" compile="1" resource="0"
+            file="Source/PluginEditor.cpp"/>
+      <FILE id="ZkR71C" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+    </GROUP>
+  </MAINGROUP>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_plugin_client" showAllCode="1" useLocalCopy="0"
+            useGlobalPath="1"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_dsp" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+  </MODULES>
+  <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
+  <EXPORTFORMATS>
+    <XCODE_MAC targetFolder="Builds/MacOSX">
+      <CONFIGURATIONS>
+        <CONFIGURATION isDebug="1" name="Debug" targetName="GuitarTools"/>
+        <CONFIGURATION isDebug="0" name="Release" targetName="GuitarTools"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_audio_basics" path="../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_plugin_client" path="../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../JUCE/modules"/>
+        <MODULEPATH id="juce_core" path="../JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../JUCE/modules"/>
+        <MODULEPATH id="juce_dsp" path="../JUCE/modules"/>
+      </MODULEPATHS>
+    </XCODE_MAC>
+  </EXPORTFORMATS>
+</JUCERPROJECT>
