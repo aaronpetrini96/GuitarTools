@@ -24,7 +24,7 @@ struct ChainSettings
     float lowCutFreq {0}, highCutFreq{0};
     float resoFreq {0}, mudFreq {0}, presenceFreq {0}, depthFreq{0};
     float presenceGain {0}, depthGain{0};
-    int presenceIndex{0};
+    int presenceIndex{0}, depthIndex{0};
     
     bool resoBypass {false}, mudBypass {false}, pluginBypass {false};
 
@@ -76,12 +76,17 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
-    
+    void savePreset(const juce::File& file);
+    void loadPreset(const juce::File& file);
+    void loadDefaultPreset();
+    //==============================================================================
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     
     juce::AudioProcessorValueTreeState treeState {*this, nullptr, "Parameters", createParameterLayout()};
 
 private:
+    
+
     
 //    Declare Filter types and Process Chains
     using Filter = juce::dsp::IIR::Filter<float>;

@@ -100,25 +100,15 @@ void GuitarToolsAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     juce::dsp::ProcessSpec spec;
     spec.maximumBlockSize = samplesPerBlock;
     spec.sampleRate = sampleRate;
-    spec.numChannels = getTotalNumOutputChannels();
+//    spec.numChannels = getTotalNumInputChannels();
+    spec.numChannels = 1;
 
     
     leftChain.prepare(spec);
     rightChain.prepare(spec);
     
-    auto chainSettings = getChainSettings(treeState);
-    
-//    ==== BELL FILTERS ====
-    updateBellFitlers(chainSettings);
-    
-//    ==== Shelf Filters ====
-    updateShelfFilters(chainSettings);
-    
-//    ==== LOW CUT ====
-    updateLowCutFilters(chainSettings);
-    
-//    ==== HIGH CUT ====
-    updateHighCutFilters(chainSettings);
+
+    updateFilters();
 
 
 }
@@ -161,35 +151,22 @@ void GuitarToolsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
+
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-    
+//
     auto chainSettings = getChainSettings(treeState);
 
-//    ==== BELL FILTERS ====
-    updateBellFitlers(chainSettings);
     
-//    ==== Shelf Filters ====
-    updateShelfFilters(chainSettings);
-    
-//    ==== LOW CUT ====
-    updateLowCutFilters(chainSettings);
-
-//    ==== high CUT ====
-    updateHighCutFilters(chainSettings);
-    
-    
+    updateFilters();
     
     juce::dsp::AudioBlock<float> block {buffer};
     
     auto leftBlock = block.getSingleChannelBlock(0);
-    auto rightBlock = block.getSingleChannelBlock(1);
+    auto rightBlock = block.getSingleChannelBlock(0);
+    if(totalNumInputChannels > 1)
+        auto rightBlock = block.getSingleChannelBlock(1);
+        
 
     juce::dsp::ProcessContextReplacing<float> leftContext {leftBlock};
     juce::dsp::ProcessContextReplacing<float> rightContext {rightBlock};
@@ -217,25 +194,65 @@ juce::AudioProcessorEditor* GuitarToolsAudioProcessor::createEditor()
 //==============================================================================
 void GuitarToolsAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+
+//    juce::MemoryOutputStream mos(destData, true);
+//    treeState.state.writeToStream(mos);
     
-    juce::MemoryOutputStream mos(destData, true);
-    treeState.state.writeToStream(mos);
+    auto state = treeState.copyState();
+    std::unique_ptr<juce::XmlElement> xml (state.createXml());
+    copyXmlToBinary(*xml, destData);
 }
 
 void GuitarToolsAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
-    auto valueTree = juce::ValueTree::readFromData(data, sizeInBytes);
-    if (valueTree.isValid())
+
+//    auto valueTree = juce::ValueTree::readFromData(data, sizeInBytes);
+//    if (valueTree.isValid())
+//    {
+//        treeState.replaceState(valueTree);
+//        updateFilters();
+//    }
+    std::unique_ptr<juce::XmlElement> xml (getXmlFromBinary(data, sizeInBytes));
+    if (xml && xml->hasTagName(treeState.state.getType()))
     {
-        treeState.replaceState(valueTree);
+        juce::ValueTree state = juce::ValueTree::fromXml(*xml);
+        treeState.replaceState(state);
         updateFilters();
     }
 }
+
+void GuitarToolsAudioProcessor::savePreset(const juce::File& file)
+{
+    auto state = treeState.copyState();
+    std::unique_ptr<juce::XmlElement> xml (state.createXml());
+    if (xml) { xml->writeTo(file);}
+}
+
+void GuitarToolsAudioProcessor::loadPreset(const juce::File& file)
+{
+    std::unique_ptr<juce::XmlElement> xml (juce::XmlDocument::parse(file));
+    if (xml && xml->hasTagName(treeState.state.getType()))
+    {
+        juce::ValueTree state = juce::ValueTree::fromXml(*xml);
+        treeState.replaceState(state);
+        updateFilters();
+    }
+}
+
+//void GuitarToolsAudioProcessor::loadDefaultPreset()
+//{
+//    auto* xmlData = juce::BinaryData::DefaultPreset_xml;
+//    auto xmlSize = juce::BinaryData::DefaultPreset_xmlSize;
+//    
+//    std::unique_ptr<juce::XmlElement> xml (juce::XmlDocument::parse (juce::String::fromUTF8 (xmlData, xmlSize)));
+//    
+//    if (xml && xml->hasTagName (treeState.state.getType()))
+//    {
+//        juce::ValueTree state = juce::ValueTree::fromXml (*xml);
+//        treeState.replaceState (state);
+//        updateFilters();
+//    }
+//}
 
 //==============================================================================
 //==============================================================================
@@ -269,14 +286,14 @@ juce::AudioProcessorValueTreeState::ParameterLayout GuitarToolsAudioProcessor::c
 
     juce::StringArray presenceFreqArray {"4.5 kHz", "6 kHz", "8 kHz"};
     layout.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID("Presence Freq", 1), "Presence Freq", presenceFreqArray, 0));
-    
     layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("Presence Gain", 1), "Presence Gain", juce::NormalisableRange<float>(-12.f, 12.f, 0.1f, 1.f),3.f));
     
 
-    
-    layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("Depth Freq", 1), "Depth Freq",
-               juce::NormalisableRange<float>(60.f, 500.f, 1.f, 1.f), 80.f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("Depth Gain", 1), "Depth Gain", juce::NormalisableRange<float>(-9.f, 9.f, 0.1f, 1.f),0.f));
+    juce::StringArray depthFreqArray {"60 Hz", "100 Hz", "170 Hz"};
+//    layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("Depth Freq", 1), "Depth Freq",
+//               juce::NormalisableRange<float>(60.f, 500.f, 1.f, 1.f), 80.f));
+    layout.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID("Depth Freq", 1), "Depth Freq", depthFreqArray, 1));
+    layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("Depth Gain", 1), "Depth Gain", juce::NormalisableRange<float>(-12.f, 12.f, 0.1f, 1.f),0.f));
 //    ========== RESONANCE TAMER ===========
     
     layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("Reso Freq",1),"Reso Freq",juce::NormalisableRange<float>(2000.f, 6000.f, 1.f, 1.f),3850.f));
@@ -306,11 +323,12 @@ ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& treeState)
     settings.mudBypass = treeState.getRawParameterValue("Mud Bypass")->load() < 0.5f;
     settings.presenceIndex = static_cast<int>(treeState.getRawParameterValue("Presence Freq")->load());
     settings.presenceGain = treeState.getRawParameterValue("Presence Gain")->load();
-    settings.depthFreq = treeState.getRawParameterValue("Depth Freq")->load();
+//    settings.depthFreq = treeState.getRawParameterValue("Depth Freq")->load();
+    settings.depthIndex = static_cast<int>(treeState.getRawParameterValue("Depth Freq")->load());
     settings.depthGain = treeState.getRawParameterValue("Depth Gain")->load();
     settings.resoBypass = treeState.getRawParameterValue("Reso Bypass")->load() < 0.5f;
     settings.resoFreq = treeState.getRawParameterValue("Reso Freq")->load();
-    
+//    presence
     if (settings.presenceIndex == 0)
     {
         settings.presenceFreq = 4500.f;
@@ -322,6 +340,19 @@ ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& treeState)
     else if (settings.presenceIndex == 2)
     {
         settings.presenceFreq = 8000.f;
+    }
+//    Depth
+    if (settings.depthIndex == 0)
+    {
+        settings.depthFreq = 60.f;
+    }
+    else if (settings.depthIndex == 1)
+    {
+        settings.depthFreq = 100.f;
+    }
+    else if (settings.depthIndex == 2)
+    {
+        settings.depthFreq = 170.f;
     }
 
     settings.pluginBypass = treeState.getRawParameterValue("Plugin Bypass")->load() > 0.5;

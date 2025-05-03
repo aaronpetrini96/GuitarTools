@@ -34,7 +34,6 @@ Button::Button(const juce::String& text, juce::AudioProcessorValueTreeState& apv
     // Hook up state change to start animation
     button.onClick = [this]()
     {
-        
         startAnimation();
     };
 
@@ -81,7 +80,7 @@ void Button::startAnimation()
 
 void Button::timerCallback()
 {
-    animationProgress += 0.1f; // Speed (tweak this if needed)
+    animationProgress += 0.2f; // Speed (tweak this if needed)
 
     if (animationProgress >= 1.0f)
     {
@@ -95,5 +94,5 @@ void Button::timerCallback()
 
     currentBackground = backgroundColourWhenOff.interpolatedWith(backgroundColourWhenOn, t);
 
-    repaint();
+    button.repaint();
 }

@@ -31,11 +31,6 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
     
-    void setPresenceFreq(const int&);
-    void updatePresenceButtons(const int&);
-    void setPresenceButtonStyle(juce::TextButton&);
-    
-    
 private:
 
     GuitarToolsAudioProcessor& audioProcessor;
@@ -46,24 +41,24 @@ private:
     RotaryKnob lowCutFreqKnob {"Low Cut", audioProcessor.treeState, juce::ParameterID("LowCut Freq", 1)," Hz"};
     RotaryKnob highCutFreqKnob {"High Cut", audioProcessor.treeState, juce::ParameterID("HighCut Freq", 1)," Hz"};
     
-    RotaryKnob lowShelfGainKnob {"Depth Gain", audioProcessor.treeState, juce::ParameterID("Depth Gain", 1), " dB", true};
-    RotaryKnob highShelfGainKnob {"Presence Gain", audioProcessor.treeState, juce::ParameterID("Presence Gain", 1), " dB", true};
+    RotaryKnob lowShelfGainKnob {"Depth", audioProcessor.treeState, juce::ParameterID("Depth Gain", 1), " dB", true};
+    RotaryKnob highShelfGainKnob {"Presence", audioProcessor.treeState, juce::ParameterID("Presence Gain", 1), " dB", true};
     
     juce::TextButton presence1 {"1"};
     juce::TextButton presence2 {"2"};
     juce::TextButton presence3 {"3"};
     std::vector<juce::TextButton*> presenceButtons = {&presence1, &presence2, &presence3};
     float choiceCount {0}, normalizedValue{0};
-//    const juce::Colour backgroundColourWhenOff = juce::Colour(100, 100, 110).darker(1.2f);
-//    const juce::Colour backgroundColourWhenOn = juce::Colour(0xFF40C4FF).darker(1.5f);
-//    juce::Colour currentBackground {backgroundColourWhenOff};
+    void setPresenceFreq(const int&);
+    void updatePresenceButtons(const int&);
+    void setShelfFilterButtonStyle(juce::TextButton&);
     
-//    // Animation state
-//    float animationProgress = 0.0f;
-//    bool animatingForward = false;
-//    float textScale = 1.0f; // Default text scale
-//    void startAnimation(juce::TextButton&);
-//    void timerCallback() override;
+    juce::TextButton depth1 {"1"};
+    juce::TextButton depth2 {"2"};
+    juce::TextButton depth3 {"3"};
+    std::vector<juce::TextButton*> depthButtons = {&depth1, &depth2, &depth3};
+    void setDepthFreq(const int&);
+    void updateDepthButtons(const int&);
 
     std::vector<juce::String> slopeOptions {"12 dB/Oct", "24 dB/Oct", "36 dB/Oct", "48 dB/Oct"};
     OptionBox lowCutSlopeBox {slopeOptions, audioProcessor.treeState, juce::ParameterID("LowCut Slope", 1)};
@@ -77,7 +72,16 @@ private:
     
     ImgButton bypassButton{"Bypass Button", audioProcessor.treeState, juce::ParameterID("Plugin Bypass",1)};
     
-
+    
+    juce::ComboBox presetBox;
+    juce::TextButton savePresetButton {"Save"};
+    void savePreset();
+    void loadPreset();
+    void presetSelected();
+    void refreshPresetList();
+    juce::File getPresetFolder();
+    std::unique_ptr<juce::FileChooser> fileChooser;
+//    juce::String plugiName {"GUITAR TOOLS v1"};
     
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GuitarToolsAudioProcessorEditor)

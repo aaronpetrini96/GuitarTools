@@ -26,7 +26,10 @@ ImgButton::ImgButton(const juce::String& text, juce::AudioProcessorValueTreeStat
                            bypassIcon, 1.f, juce::Colours::green,
                            bypassIcon, 1.f, juce::Colours::red,
                            0.f);
-    
+    button.onClick = [this]
+    {
+        
+    };
     addAndMakeVisible(button);
     setSize(25, 25);
 }
