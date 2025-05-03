@@ -11,7 +11,8 @@ namespace Colors
 //        const juce::Colour trackBackground {205, 200, 195};
         const juce::Colour trackBackground {juce::Colours::white.withAlpha(0.5f)};
 //        const juce::Colour trackActive {177, 101, 135};
-        const juce::Colour trackActive {juce::Colours::red.darker(0.2f)};
+//        const juce::Colour trackActive {juce::Colours::red.darker(0.2f)}; //rojo
+        const juce::Colour trackActive {250, 130, 177}; //rosa
         const juce::Colour outline {255, 250, 245};
         const juce::Colour gradientTop {250, 245, 240};
         const juce::Colour gradientBottom {240, 235, 230};
@@ -127,6 +128,17 @@ public:
     void drawButtonText (juce::Graphics& g, juce::TextButton& button,
                         bool shouldDrawButtonAsHighlighted,
                         bool shouldDrawButtonAsDown) override;
+    
+    void drawToggleButton (juce::Graphics& g, juce::ToggleButton& button,
+                               bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override
+        {
+            // Draw text only, no tick box
+            auto fontSize = juce::jmin (15.0f, button.getHeight() * 0.75f);
+            g.setFont (fontSize);
+
+            g.setColour (button.findColour (juce::ToggleButton::textColourId));
+            g.drawFittedText (button.getButtonText(), button.getLocalBounds(), juce::Justification::centred, 1);
+        }
     
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ButtonLookAndFeel)

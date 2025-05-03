@@ -30,6 +30,7 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
     buttonsGroup.setText("Magic Buttons");
     buttonsGroup.setTextLabelPosition(juce::Justification::horizontallyCentred);
     
+    
     buttonsGroup.addAndMakeVisible(resoButton);
     buttonsGroup.addAndMakeVisible(resoFreqSlider);
     buttonsGroup.addAndMakeVisible(mudButton);
@@ -55,9 +56,7 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
     
 
     setSize (500, 360);
-//    juce::AudioProcessorEditor::setResizable(true, true);
-//    juce::AudioProcessorEditor::setResizeLimits(getWidth() * 0.75, getHeight() * 0.75, getWidth() * 1.25, getHeight() * 1.25);
-//    juce::AudioProcessorEditor::getConstrainer()->setFixedAspectRatio(1.428);
+
 }
 
 GuitarToolsAudioProcessorEditor::~GuitarToolsAudioProcessorEditor()
@@ -129,9 +128,12 @@ void GuitarToolsAudioProcessorEditor::setPresenceButtonStyle(juce::TextButton& b
     button.setClickingTogglesState(true);
 //    button.setColour(juce::TextButton::buttonColourId, juce::Colours::transparentBlack);
 //    button.setColour(juce::TextButton::ColourIds::buttonOnColourId, juce::Colours::green.withAlpha(0.75f));
-    
     button.setColour(juce::TextButton::ColourIds::buttonColourId, juce::Colour(100, 100, 110).darker(0.5f));
-    button.setColour(juce::TextButton::ColourIds::buttonOnColourId, juce::Colour(230, 165, 70));
+//    button.setColour(juce::TextButton::ColourIds::buttonColourId, backgroundColourWhenOff);
+//    button.setColour(juce::TextButton::ColourIds::buttonOnColourId, juce::Colour(230, 165, 70));
+
+    button.setColour(juce::TextButton::ColourIds::buttonOnColourId, juce::Colour(0xFF40C4FF).darker(1.f));
+//    button.setColour(juce::TextButton::ColourIds::buttonOnColourId, backgroundColourWhenOn);
     button.setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentBlack);
     button.setColour(juce::TextButton::ColourIds::textColourOnId, juce::Colours::white);
     button.setColour(juce::TextButton::ColourIds::textColourOffId, juce::Colours::white);
@@ -139,6 +141,8 @@ void GuitarToolsAudioProcessorEditor::setPresenceButtonStyle(juce::TextButton& b
     
     button.setSize(25, 25);
 //    button.setLookAndFeel(ButtonLookAndFeel::get());
+    
+
 }
 
 void GuitarToolsAudioProcessorEditor::setPresenceFreq(const int& index)
@@ -152,6 +156,7 @@ void GuitarToolsAudioProcessorEditor::setPresenceFreq(const int& index)
         param->setValueNotifyingHost(normalizedValue);
         param->endChangeGesture();
         updatePresenceButtons(index);
+        
     }
 }
 
@@ -161,5 +166,36 @@ void GuitarToolsAudioProcessorEditor::updatePresenceButtons(const int& selectedI
     presence1.setToggleState(selectedIndex == 0, juce::dontSendNotification);
     presence2.setToggleState(selectedIndex == 1, juce::dontSendNotification);
     presence3.setToggleState(selectedIndex == 2, juce::dontSendNotification);
-    
+//    if (presence1.getToggleState())
+//        startAnimation(presence1);
+//    if (presence2.getToggleState())
+//        startAnimation(presence2);
+//    if (presence3.getToggleState())
+//        startAnimation(presence3);
 }
+
+//void GuitarToolsAudioProcessorEditor::startAnimation(juce::TextButton& button)
+//{
+//    animatingForward = button.getToggleState();
+//    animationProgress = 0.0f;
+//    startTimerHz(60); // 60 FPS
+//}
+//
+//void GuitarToolsAudioProcessorEditor::timerCallback()
+//{
+//    animationProgress += 0.08f; // Speed (tweak this if needed)
+//
+//    if (animationProgress >= 1.0f)
+//    {
+//        animationProgress = 1.0f;
+//        stopTimer();
+//    }
+//
+//    float t = animationProgress;
+//    if (!animatingForward)
+//        t = 1.0f - t;
+//
+//    currentBackground = backgroundColourWhenOff.interpolatedWith(backgroundColourWhenOn, t);
+//
+//    repaint();
+//}

@@ -15,7 +15,7 @@
 //==============================================================================
 /*
 */
-class Button  : public juce::Component
+class Button  : public juce::Component, private juce::Timer
 {
 public:
     Button(const juce::String& text, juce::AudioProcessorValueTreeState& apvts, const juce::ParameterID parameterID);
@@ -23,18 +23,23 @@ public:
 
     void paint (juce::Graphics&) override;
     void resized() override;
-    bool getToggleState();
-   
     
+
+private:
     juce::ToggleButton button;
     juce::AudioProcessorValueTreeState::ButtonAttachment attachment;
     juce::Label label;
     
-
-private:
-    const juce::Colour backgroundColourWhenOff = juce::Colour(100, 100, 110).darker(0.5f);
-    const juce::Colour backgroundColourWhenOn = juce::Colours::yellow;
-    juce::Colour background {backgroundColourWhenOff};
+    const juce::Colour backgroundColourWhenOff = juce::Colour(100, 100, 110).darker(1.2f);
+    const juce::Colour backgroundColourWhenOn = juce::Colour(0xFF40C4FF).darker(1.5f);
+    juce::Colour currentBackground {backgroundColourWhenOff};
+    
+    // Animation state
+    float animationProgress = 0.0f;
+    bool animatingForward = true;
+    
+    void startAnimation();
+    void timerCallback() override;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Button)
 };

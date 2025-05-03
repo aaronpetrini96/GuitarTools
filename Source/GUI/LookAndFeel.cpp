@@ -148,6 +148,7 @@ ButtonLookAndFeel::ButtonLookAndFeel()
     setColour(juce::TextButton::textColourOnId, Colors::Button::textToggled);
     setColour(juce::TextButton::buttonColourId, Colors::Button::background);
     setColour(juce::TextButton::buttonOnColourId, juce::Colours::lightyellow);
+    
 }
 
 void ButtonLookAndFeel::drawButtonBackground(juce::Graphics &g, juce::Button &button, const juce::Colour &backgroundColour,
@@ -156,13 +157,17 @@ void ButtonLookAndFeel::drawButtonBackground(juce::Graphics &g, juce::Button &bu
     auto bounds = button.getLocalBounds().toFloat();
     auto cornersize = bounds.getHeight() * 0.25f;
     auto buttonRect = bounds.reduced(1.f, 1.f).withTrimmedBottom(1.f);
-    
+
+
     if (shouldDrawButtonAsDown)
         buttonRect.translate(0.f, 1.f);
+
     
+    // Background color 
     g.setColour(backgroundColour);
     g.fillRoundedRectangle(buttonRect, cornersize);
     
+    // Button border
     g.setColour(juce::Colour(169, 105, 134));
     g.drawRoundedRectangle(buttonRect, cornersize, 2.f);
 }
@@ -172,15 +177,20 @@ void ButtonLookAndFeel::drawButtonText(juce::Graphics &g, juce::TextButton &butt
     auto bounds = button.getLocalBounds().toFloat();
     auto buttonRect = bounds.reduced(1.f, 1.f).withTrimmedBottom(1.f);
     
+    // Ignore hover effect; only account for "down" state
     if (shouldDrawButtonAsDown)
         buttonRect.translate(0.f, 1.f);
     
+    // Set text color based on toggle state
     if (button.getToggleState())
     {
         g.setColour(button.findColour(juce::TextButton::textColourOnId));
-    } else {
+    }
+    else
+    {
         g.setColour(button.findColour(juce::TextButton::textColourOffId));
     }
+    
     g.setFont(Fonts::getFont());
     g.drawText(button.getButtonText(), buttonRect, juce::Justification::centred);
 }
