@@ -25,6 +25,12 @@
         <FILE id="KWPlNq" name="RotaryKnob.h" compile="0" resource="0" file="Source/GUI/RotaryKnob.h"/>
       </GROUP>
       <GROUP id="{BEEC5DC6-4F3B-B210-B68B-1200B7B78109}" name="Assets">
+        <FILE id="hSVEAh" name="back.png" compile="0" resource="1" file="Source/Assets/back.png"/>
+        <FILE id="bDnFg0" name="back_d.png" compile="0" resource="1" file="Source/Assets/back_d.png"/>
+        <FILE id="OInA6A" name="but_small_rec_off.png" compile="0" resource="1"
+              file="Source/Assets/but_small_rec_off.png"/>
+        <FILE id="fyxvEF" name="but_small_rec_on.png" compile="0" resource="1"
+              file="Source/Assets/but_small_rec_on.png"/>
         <FILE id="DnfOSq" name="Bypass.png" compile="0" resource="1" file="Source/Assets/Bypass.png"/>
         <FILE id="vGLWG6" name="Lato-Medium.ttf" compile="0" resource="1" file="Source/Assets/Lato-Medium.ttf"/>
         <FILE id="IbE4t0" name="Lato-Regular.ttf" compile="0" resource="1"

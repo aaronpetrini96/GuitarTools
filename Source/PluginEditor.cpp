@@ -89,8 +89,6 @@ GuitarToolsAudioProcessorEditor::~GuitarToolsAudioProcessorEditor()
 //==============================================================================
 void GuitarToolsAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
-//    g.fillAll (juce::Colours::whitesmoke);
     g.setGradientFill(juce::ColourGradient::vertical(juce::Colour::fromRGB(23, 24, 21).darker(1.5f), getHeight(), juce::Colour::fromRGB(23, 24, 21), getHeight() * 0.4));
     g.fillRect(getLocalBounds());
   
