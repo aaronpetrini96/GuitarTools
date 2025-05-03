@@ -29,8 +29,13 @@ public:
     juce::ToggleButton button;
     juce::AudioProcessorValueTreeState::ButtonAttachment attachment;
     juce::Label label;
+    
 
 private:
+    const juce::Colour backgroundColourWhenOff = juce::Colour(100, 100, 110).darker(0.5f);
+    const juce::Colour backgroundColourWhenOn = juce::Colours::yellow;
+    juce::Colour background {backgroundColourWhenOff};
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Button)
 };
 

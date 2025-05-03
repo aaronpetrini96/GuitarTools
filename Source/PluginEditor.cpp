@@ -54,7 +54,10 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
     setLookAndFeel(&mainLF);
     
 
-    setSize (500, 350);
+    setSize (500, 360);
+//    juce::AudioProcessorEditor::setResizable(true, true);
+//    juce::AudioProcessorEditor::setResizeLimits(getWidth() * 0.75, getHeight() * 0.75, getWidth() * 1.25, getHeight() * 1.25);
+//    juce::AudioProcessorEditor::getConstrainer()->setFixedAspectRatio(1.428);
 }
 
 GuitarToolsAudioProcessorEditor::~GuitarToolsAudioProcessorEditor()
@@ -83,7 +86,7 @@ void GuitarToolsAudioProcessorEditor::resized()
 {
     auto bounds = getLocalBounds();
     int y = bounds.getHeight() * 0.015;
-    int height = bounds.getHeight() * 0.915;
+    int height = bounds.getHeight() * 0.9;
     auto leftMargin = bounds.getWidth() * 0.02;
     auto presenceButtonsSize = leftMargin * 2.5;
     auto groupWidth = bounds.getWidth() * 0.245;

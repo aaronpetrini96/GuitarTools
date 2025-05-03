@@ -188,10 +188,9 @@ void ButtonLookAndFeel::drawButtonText(juce::Graphics &g, juce::TextButton &butt
 ComboBoxLookAndFeel::ComboBoxLookAndFeel()
 {
 //    setColour(juce::ComboBox::ColourIds::arrowColourId, juce::Colours::lightgrey);
-    setColour(juce::ComboBox::ColourIds::backgroundColourId,juce::Colours::lightgrey.withAlpha(0.75f));
-    setColour(juce::ComboBox::ColourIds::textColourId, juce::Colours::purple);
-    setColour(juce::ComboBox::textColourId, Colors::Knob::label);
-    setColour(juce::ComboBox::outlineColourId, juce::Colour(169, 105, 134));
+    setColour(juce::ComboBox::ColourIds::backgroundColourId, Colors::OptionBox::backgroundColour);
+    setColour(juce::ComboBox::ColourIds::textColourId, Colors::OptionBox::textColour);
+    setColour(juce::ComboBox::outlineColourId, Colors::OptionBox::outlineColour);
 }
 
 void ComboBoxLookAndFeel::drawComboBox(juce::Graphics &g, int width, int height, bool isButtonDown, int buttonX, int buttonY, int buttonW, int buttonH, juce::ComboBox &box)
@@ -202,8 +201,8 @@ void ComboBoxLookAndFeel::drawComboBox(juce::Graphics &g, int width, int height,
     g.setColour (box.findColour (juce::ComboBox::backgroundColourId));
     g.fillRoundedRectangle (boxBounds.toFloat(), cornerSize);
 
-//    g.setColour (box.findColour (juce::ComboBox::outlineColourId));
-    g.setColour (juce::Colour(138, 138, 138));
+    g.setColour (box.findColour (juce::ComboBox::outlineColourId));
+//    g.setColour (juce::Colour(138, 138, 138));
     g.drawRoundedRectangle (boxBounds.toFloat().reduced (1.f, 1.f), cornerSize, 2.f);
 
 //    Rectangle<int> arrowZone (width - 30, 0, 20, height);

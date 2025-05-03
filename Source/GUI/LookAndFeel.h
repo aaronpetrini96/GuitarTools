@@ -52,6 +52,13 @@ namespace Colors
         const juce::Colour tooLoud {226, 74, 81};
         const juce::Colour levelOK {65, 206, 88};
     }
+
+    namespace OptionBox
+    {
+    const juce::Colour backgroundColour {juce::Colours::lightgrey.withAlpha(0.75f)};
+    const juce::Colour textColour {juce::Colours::white};
+    const juce::Colour outlineColour {juce::Colour(138, 138, 138)};
+    }
 }
 
 class Fonts
