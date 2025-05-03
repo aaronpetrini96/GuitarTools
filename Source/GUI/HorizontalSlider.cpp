@@ -58,8 +58,9 @@ HorizontalSlider::HorizontalSlider(const juce::String& text,
 : attachment(apvts, parameterID.getParamID(), slider)
 {
     slider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
-    slider.setColour(juce::Slider::ColourIds::thumbColourId, juce::Colours::red.withAlpha(0.9f));
-    slider.setColour(juce::Slider::ColourIds::trackColourId, juce::Colours::black.withAlpha(0.5f));
+    slider.setColour(juce::Slider::ColourIds::thumbColourId, juce::Colours::red.withAlpha(0.8f));
+    slider.setColour(juce::Slider::ColourIds::trackColourId, juce::Colours::grey.withAlpha(0.3f));
+    
     slider.setTextBoxStyle(juce::Slider::TextBoxLeft, false, 60, 20);
     if (suffix != "") {
         slider.setTextValueSuffix(suffix);

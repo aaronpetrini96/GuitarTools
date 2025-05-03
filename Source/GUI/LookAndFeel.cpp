@@ -202,7 +202,8 @@ void ComboBoxLookAndFeel::drawComboBox(juce::Graphics &g, int width, int height,
     g.setColour (box.findColour (juce::ComboBox::backgroundColourId));
     g.fillRoundedRectangle (boxBounds.toFloat(), cornerSize);
 
-    g.setColour (box.findColour (juce::ComboBox::outlineColourId));
+//    g.setColour (box.findColour (juce::ComboBox::outlineColourId));
+    g.setColour (juce::Colour(138, 138, 138));
     g.drawRoundedRectangle (boxBounds.toFloat().reduced (1.f, 1.f), cornerSize, 2.f);
 
 //    Rectangle<int> arrowZone (width - 30, 0, 20, height);

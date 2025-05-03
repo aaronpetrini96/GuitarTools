@@ -8,14 +8,19 @@ namespace Colors
     const juce::Colour header {40, 40, 40};
     namespace Knob
     {
-        const juce::Colour trackBackground {205, 200, 195};
-        const juce::Colour trackActive {177, 101, 135};
+//        const juce::Colour trackBackground {205, 200, 195};
+        const juce::Colour trackBackground {juce::Colours::white.withAlpha(0.5f)};
+//        const juce::Colour trackActive {177, 101, 135};
+        const juce::Colour trackActive {juce::Colours::red.darker(0.2f)};
         const juce::Colour outline {255, 250, 245};
         const juce::Colour gradientTop {250, 245, 240};
         const juce::Colour gradientBottom {240, 235, 230};
-        const juce::Colour dial {100, 100, 100};
-        const juce::Colour dropShadow {195, 190, 185};
-        const juce::Colour label {80, 80, 80};
+//        const juce::Colour dial {100, 100, 100};
+        const juce::Colour dial {juce::Colours::black};
+//        const juce::Colour dropShadow {195, 190, 185};
+        const juce::Colour dropShadow {15, 15, 15};
+//        const juce::Colour label {80, 80, 80};
+        const juce::Colour label {juce::Colours::white};
         const juce::Colour textBoxBackground {80, 80, 80};
         const juce::Colour value {240, 240, 240};
         const juce::Colour caret {255, 255, 255};
@@ -24,9 +29,10 @@ namespace Colors
     namespace Group
     {
 //        const juce::Colour label {160,155, 150};
-        const juce::Colour label {0, 0, 0};
+//        const juce::Colour label {0, 0, 0};
+        const juce::Colour label {juce::Colours::white};
 //        const juce::Colour outline {235, 230, 255};
-        const juce::Colour outline {juce::Colours::black.withAlpha(0.5f)};
+        const juce::Colour outline {juce::Colours::white.withAlpha(0.5f)};
     }
 
     namespace Button

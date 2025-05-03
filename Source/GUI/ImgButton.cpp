@@ -22,10 +22,11 @@ ImgButton::ImgButton(const juce::String& text, juce::AudioProcessorValueTreeStat
     button.setClickingTogglesState(true);
     button.setBounds(0, 0, 20, 20);
     button.setImages(false, true, true,
-                           bypassIcon, 1.f, juce::Colours::black,
-                           bypassIcon, 1.f, juce::Colours::black,
+                           bypassIcon, 1.f, juce::Colours::green,
+                           bypassIcon, 1.f, juce::Colours::green,
                            bypassIcon, 1.f, juce::Colours::red,
                            0.f);
+    
     addAndMakeVisible(button);
     setSize(25, 25);
 }

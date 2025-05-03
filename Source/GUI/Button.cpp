@@ -19,10 +19,12 @@ Button::Button(const juce::String& text, juce::AudioProcessorValueTreeState& apv
     
     button.setButtonText(text);
     button.setToggleable(true);
-    button.setColour(juce::ToggleButton::ColourIds::textColourId, juce::Colours::black);
-    button.setColour(juce::ToggleButton::ColourIds::tickColourId, juce::Colours::black);
+    button.setColour(juce::ToggleButton::ColourIds::textColourId, juce::Colours::white);
+    button.setColour(juce::ToggleButton::ColourIds::tickColourId, juce::Colours::white);
     
-    button.setColour(juce::ToggleButton::ColourIds::tickDisabledColourId, juce::Colour(160, 105, 134));
+//    button.setColour(juce::ToggleButton::ColourIds::tickDisabledColourId, juce::Colour(160, 105, 134));
+    button.setColour(juce::ToggleButton::ColourIds::tickDisabledColourId, juce::Colours::white.withAlpha(0.5f));
+    
 
     addAndMakeVisible(button);
     button.setBounds(0, 0, 120, 50);
@@ -44,12 +46,13 @@ void Button::paint (juce::Graphics& g)
     auto buttonRect = bounds.reduced(1.f, 1.f).withTrimmedBottom(1.f);
  
     
-    g.setColour(juce::Colours::black.withAlpha(0.1f));
+    g.setColour(juce::Colours::white.withAlpha(0.1f));
     g.fillRoundedRectangle(buttonRect, cornersize);
     
 
 //    g.setColour(Colors::Button::outline);
-    g.setColour(juce::Colour(160, 105, 134));
+//    g.setColour(juce::Colour(160, 105, 134));
+    g.setColour(juce::Colour(138, 138, 138));
     g.drawRoundedRectangle(buttonRect, cornersize, 2.f);
 
 }
