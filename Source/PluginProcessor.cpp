@@ -159,12 +159,12 @@ void GuitarToolsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 //
-    if (buffer.getNumChannels() == 1 && buffer.getNumSamples() > 0)
-    {
-        // Create stereo by duplicating channel 0 to channel 1, if 2nd channel exists
-        buffer.setSize(2, buffer.getNumSamples(), true, true, true);
-        buffer.copyFrom(1, 0, buffer, 0, 0, buffer.getNumSamples());
-    }
+//    if (buffer.getNumChannels() == 1 && buffer.getNumSamples() > 0)
+//    {
+//        // Create stereo by duplicating channel 0 to channel 1, if 2nd channel exists
+//        buffer.setSize(2, buffer.getNumSamples(), true, true, true);
+//        buffer.copyFrom(1, 0, buffer, 0, 0, buffer.getNumSamples());
+//    }
 
     auto chainSettings = getChainSettings(treeState);
 
@@ -213,8 +213,13 @@ void GuitarToolsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
      
      */
     
+    
     auto leftBlock = block.getSingleChannelBlock(0);
-    auto rightBlock = block.getSingleChannelBlock(1);
+    auto rightBlock = block.getSingleChannelBlock(0);
+    if (totalNumInputChannels > 1)
+        rightBlock = block.getSingleChannelBlock(1);
+
+    
 
     juce::dsp::ProcessContextReplacing<float> leftContext {leftBlock};
     juce::dsp::ProcessContextReplacing<float> rightContext {rightBlock};
