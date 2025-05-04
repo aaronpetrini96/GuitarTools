@@ -19,6 +19,15 @@ enum Slope
     Slope_48,
 };
 
+enum OversamplingFactor
+{
+    Off,
+    x2,
+    x4,
+    x8,
+};
+
+
 struct ChainSettings
 {
     float lowCutFreq {0}, highCutFreq{0};
@@ -28,7 +37,7 @@ struct ChainSettings
     
     bool resoBypass {false}, mudBypass {false}, pluginBypass {false};
 
-
+    OversamplingFactor oversamplingFactor {OversamplingFactor::Off};
     Slope lowCutSlope {Slope::Slope_12}, highCutSlope {Slope::Slope_12};
 };
 
@@ -86,7 +95,12 @@ public:
 
 private:
     
-
+    size_t oversamplingFactor{1};
+    
+    void updateOversampling(const ChainSettings& chainSettings);
+    
+//    juce::dsp::Oversampling<float> oversampling {oversamplingFactor, 2, juce::dsp::Oversampling<float>::filterHalfBandPolyphaseIIR};
+    std::unique_ptr<juce::dsp::Oversampling<float>> oversampling;
     
 //    Declare Filter types and Process Chains
     using Filter = juce::dsp::IIR::Filter<float>;
@@ -158,6 +172,8 @@ private:
         }
         
     }
+
+    
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GuitarToolsAudioProcessor)

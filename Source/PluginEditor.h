@@ -64,6 +64,9 @@ private:
     OptionBox lowCutSlopeBox {slopeOptions, audioProcessor.treeState, juce::ParameterID("LowCut Slope", 1)};
     OptionBox highCutSlopeBox {slopeOptions, audioProcessor.treeState, juce::ParameterID("HighCut Slope", 1)};
     
+    std::vector<juce::String> oversamplingOptions { "Off (OS)", "2x", "4x", "8x" };
+    OptionBox oversamplingBox {oversamplingOptions, audioProcessor.treeState, juce::ParameterID("Oversampling",1)};
+    
     Button resoButton {"Tame Resonance", audioProcessor.treeState, juce::ParameterID("Reso Bypass", 1)};
     Button mudButton {"Kill Mud", audioProcessor.treeState, juce::ParameterID("Mud Bypass", 1)};
     
@@ -81,8 +84,7 @@ private:
     void refreshPresetList();
     juce::File getPresetFolder();
     std::unique_ptr<juce::FileChooser> fileChooser;
-//    juce::String plugiName {"GUITAR TOOLS v1"};
-    
-    
+
+        
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GuitarToolsAudioProcessorEditor)
 };

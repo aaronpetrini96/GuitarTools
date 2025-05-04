@@ -22,10 +22,12 @@ GuitarToolsAudioProcessor::GuitarToolsAudioProcessor()
                        )
 #endif
 {
+//    oversamplingFactor = 1;
 }
 
 GuitarToolsAudioProcessor::~GuitarToolsAudioProcessor()
 {
+//    oversampling.reset();
 }
 
 //==============================================================================
@@ -100,14 +102,16 @@ void GuitarToolsAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     juce::dsp::ProcessSpec spec;
     spec.maximumBlockSize = samplesPerBlock;
     spec.sampleRate = sampleRate;
-//    spec.numChannels = getTotalNumInputChannels();
     spec.numChannels = 1;
-
+    
+//    updateOversampling(getChainSettings(treeState));
+//    if (oversampling)
+//        oversampling->initProcessing(static_cast<size_t>(samplesPerBlock));
     
     leftChain.prepare(spec);
     rightChain.prepare(spec);
     
-
+    
     updateFilters();
 
 
@@ -155,28 +159,68 @@ void GuitarToolsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 //
+    if (buffer.getNumChannels() == 1 && buffer.getNumSamples() > 0)
+    {
+        // Create stereo by duplicating channel 0 to channel 1, if 2nd channel exists
+        buffer.setSize(2, buffer.getNumSamples(), true, true, true);
+        buffer.copyFrom(1, 0, buffer, 0, 0, buffer.getNumSamples());
+    }
+
     auto chainSettings = getChainSettings(treeState);
 
-    
     updateFilters();
     
     juce::dsp::AudioBlock<float> block {buffer};
     
-    auto leftBlock = block.getSingleChannelBlock(0);
-    auto rightBlock = block.getSingleChannelBlock(0);
-    if(totalNumInputChannels > 1)
+    if (chainSettings.pluginBypass != 0)
+    {
+        return; // true bypass: leave buffer unprocessed
+    }
+    
+    /*
+    
+    if (oversampling)
+    {
+        auto oversampledBlock = oversampling->processSamplesUp(block);
+
+        auto leftBlock = oversampledBlock.getSingleChannelBlock(0);
+        auto rightBlock = oversampledBlock.getSingleChannelBlock(1);
+
+        juce::dsp::ProcessContextReplacing<float> leftContext {leftBlock};
+        juce::dsp::ProcessContextReplacing<float> rightContext {rightBlock};
+
+        leftChain.process(leftContext);
+        rightChain.process(rightContext);
+
+//        oversampling->processSamplesDown(block);
+        // Apply downsampling with anti-aliasing filters to both left and right channels
+//        oversampling->processSamplesDown(leftBlock);
+//        oversampling->processSamplesDown(rightBlock);
+    }
+    else
+    {
+        auto leftBlock = block.getSingleChannelBlock(0);
         auto rightBlock = block.getSingleChannelBlock(1);
+
+        juce::dsp::ProcessContextReplacing<float> leftContext {leftBlock};
+        juce::dsp::ProcessContextReplacing<float> rightContext {rightBlock};
+
+        leftChain.process(leftContext);
+        rightChain.process(rightContext);
         
+    }
+     
+     
+     */
+    
+    auto leftBlock = block.getSingleChannelBlock(0);
+    auto rightBlock = block.getSingleChannelBlock(1);
 
     juce::dsp::ProcessContextReplacing<float> leftContext {leftBlock};
     juce::dsp::ProcessContextReplacing<float> rightContext {rightBlock};
-    
-    if(chainSettings.pluginBypass == 0)
-    {
-        leftChain.process(leftContext);
-        rightChain.process(rightContext);
-    }
-    
+
+    leftChain.process(leftContext);
+    rightChain.process(rightContext);
 }
 
 //==============================================================================
@@ -194,10 +238,6 @@ juce::AudioProcessorEditor* GuitarToolsAudioProcessor::createEditor()
 //==============================================================================
 void GuitarToolsAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-
-//    juce::MemoryOutputStream mos(destData, true);
-//    treeState.state.writeToStream(mos);
-    
     auto state = treeState.copyState();
     std::unique_ptr<juce::XmlElement> xml (state.createXml());
     copyXmlToBinary(*xml, destData);
@@ -205,13 +245,6 @@ void GuitarToolsAudioProcessor::getStateInformation (juce::MemoryBlock& destData
 
 void GuitarToolsAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-
-//    auto valueTree = juce::ValueTree::readFromData(data, sizeInBytes);
-//    if (valueTree.isValid())
-//    {
-//        treeState.replaceState(valueTree);
-//        updateFilters();
-//    }
     std::unique_ptr<juce::XmlElement> xml (getXmlFromBinary(data, sizeInBytes));
     if (xml && xml->hasTagName(treeState.state.getType()))
     {
@@ -239,23 +272,7 @@ void GuitarToolsAudioProcessor::loadPreset(const juce::File& file)
     }
 }
 
-//void GuitarToolsAudioProcessor::loadDefaultPreset()
-//{
-//    auto* xmlData = juce::BinaryData::DefaultPreset_xml;
-//    auto xmlSize = juce::BinaryData::DefaultPreset_xmlSize;
-//    
-//    std::unique_ptr<juce::XmlElement> xml (juce::XmlDocument::parse (juce::String::fromUTF8 (xmlData, xmlSize)));
-//    
-//    if (xml && xml->hasTagName (treeState.state.getType()))
-//    {
-//        juce::ValueTree state = juce::ValueTree::fromXml (*xml);
-//        treeState.replaceState (state);
-//        updateFilters();
-//    }
-//}
 
-//==============================================================================
-//==============================================================================
 //==============================================================================
 //==============================================================================
 juce::AudioProcessorValueTreeState::ParameterLayout GuitarToolsAudioProcessor::createParameterLayout()
@@ -283,19 +300,16 @@ juce::AudioProcessorValueTreeState::ParameterLayout GuitarToolsAudioProcessor::c
     
     
 //    ========== HIGH/LOW SHELVE  ===========
-
     juce::StringArray presenceFreqArray {"4.5 kHz", "6 kHz", "8 kHz"};
     layout.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID("Presence Freq", 1), "Presence Freq", presenceFreqArray, 0));
     layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("Presence Gain", 1), "Presence Gain", juce::NormalisableRange<float>(-12.f, 12.f, 0.1f, 1.f),3.f));
     
 
     juce::StringArray depthFreqArray {"60 Hz", "100 Hz", "170 Hz"};
-//    layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("Depth Freq", 1), "Depth Freq",
-//               juce::NormalisableRange<float>(60.f, 500.f, 1.f, 1.f), 80.f));
     layout.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID("Depth Freq", 1), "Depth Freq", depthFreqArray, 1));
     layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("Depth Gain", 1), "Depth Gain", juce::NormalisableRange<float>(-12.f, 12.f, 0.1f, 1.f),0.f));
-//    ========== RESONANCE TAMER ===========
     
+//    ========== RESONANCE TAMER ===========
     layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("Reso Freq",1),"Reso Freq",juce::NormalisableRange<float>(2000.f, 6000.f, 1.f, 1.f),3850.f));
     layout.add(std::make_unique<juce::AudioParameterBool>(juce::ParameterID("Reso Bypass", 1), "Reso Bypass", false));
     
@@ -304,8 +318,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout GuitarToolsAudioProcessor::c
     layout.add(std::make_unique<juce::AudioParameterBool>(juce::ParameterID("Mud Bypass", 1), "Mud Bypass", false));
     
 //    ========== BYPASS ===========
-    
     layout.add(std::make_unique<juce::AudioParameterBool>(juce::ParameterID("Plugin Bypass", 1), "Bypass", false));
+    
+//    ========== OVERSAMPLING ===========
+    layout.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID("Oversampling", 1), "Oversampling", juce::StringArray {"Off", "2x", "4x", "8x"}, 0));
+    
 //    ========== RETURN LAYOUT ===========
     return layout;
 }
@@ -323,11 +340,12 @@ ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& treeState)
     settings.mudBypass = treeState.getRawParameterValue("Mud Bypass")->load() < 0.5f;
     settings.presenceIndex = static_cast<int>(treeState.getRawParameterValue("Presence Freq")->load());
     settings.presenceGain = treeState.getRawParameterValue("Presence Gain")->load();
-//    settings.depthFreq = treeState.getRawParameterValue("Depth Freq")->load();
     settings.depthIndex = static_cast<int>(treeState.getRawParameterValue("Depth Freq")->load());
     settings.depthGain = treeState.getRawParameterValue("Depth Gain")->load();
     settings.resoBypass = treeState.getRawParameterValue("Reso Bypass")->load() < 0.5f;
     settings.resoFreq = treeState.getRawParameterValue("Reso Freq")->load();
+    settings.oversamplingFactor = static_cast<OversamplingFactor>(treeState.getRawParameterValue("Oversampling")->load());
+    
 //    presence
     if (settings.presenceIndex == 0)
     {
@@ -341,6 +359,7 @@ ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& treeState)
     {
         settings.presenceFreq = 8000.f;
     }
+    
 //    Depth
     if (settings.depthIndex == 0)
     {
@@ -418,6 +437,44 @@ void GuitarToolsAudioProcessor::updateHighCutFilters(const ChainSettings& chainS
 }
 
 
+void GuitarToolsAudioProcessor::updateOversampling(const ChainSettings &chainSettings)
+{
+//    auto factor = chainSettings.oversamplingFactor;
+//    int newFactor = 1;
+//
+//    switch (factor) {
+//        case Off: newFactor = 1; break;
+//        case x2:  newFactor = 2; break;
+//        case x4:  newFactor = 4; break;
+//        case x8:  newFactor = 8; break;
+//    }
+//
+//    // Only recreate oversampling object if factor has changed
+//    if (newFactor != oversamplingFactor)
+//    {
+//        oversamplingFactor = newFactor;
+//        std::cout << "New Oversampling Factor: " << oversamplingFactor << "x" << std::endl;
+//
+//        // Calculate number of stages (each stage doubles the rate)
+//        int numStages = 0;
+//        if (oversamplingFactor == 2) numStages = 1;
+//        else if (oversamplingFactor == 4) numStages = 2;
+//        else if (oversamplingFactor == 8) numStages = 3;
+//        else numStages = 0; // Off or 1x
+//
+//        // Recreate oversampling object
+//        oversampling = std::make_unique<juce::dsp::Oversampling<float>>(
+//            2, // 2 channels (stereo)
+//            numStages, // number of stages
+//            juce::dsp::Oversampling<float>::filterHalfBandPolyphaseIIR
+//        );
+//
+//        // Initialize buffers with expected block size (use safe default)
+//        oversampling->reset();
+//        oversampling->initProcessing((size_t) getBlockSize());
+//    }
+}
+
 //==============================================================================
 void GuitarToolsAudioProcessor::updateFilters()
 {
@@ -426,8 +483,8 @@ void GuitarToolsAudioProcessor::updateFilters()
     updateShelfFilters(chainSettings);
     updateLowCutFilters(chainSettings);
     updateHighCutFilters(chainSettings);
+//    updateOversampling(chainSettings);
 }
-
 
 
 //==============================================================================

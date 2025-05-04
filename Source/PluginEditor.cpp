@@ -34,6 +34,13 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
     refreshPresetList();
     addAndMakeVisible(presetBox);
     
+//    OVERSAMPLING
+//    oversamplingBox.setColour(juce::ComboBox::ColourIds::backgroundColourId, juce::Colour(100, 100, 110).darker(0.5f));
+//    oversamplingBox.setColour(juce::ComboBox::ColourIds::outlineColourId, juce::Colours::transparentBlack);
+//    oversamplingBox.setLookAndFeel(ComboBoxLookAndFeel::get());
+//    oversamplingBox.setSize(60, 25);
+    addAndMakeVisible(oversamplingBox);
+    
 //    GROUPS
     cutFiltersGroup.setText("Cut Filters");
     cutFiltersGroup.setTextLabelPosition(juce::Justification::horizontallyCentred);
@@ -109,6 +116,10 @@ void GuitarToolsAudioProcessorEditor::resized()
     
 //    BYPASS
     bypassButton.setBounds(bounds.getWidth() * 0.93, bounds.getHeight() * 0.932, bypassButton.getWidth(), bypassButton.getHeight());
+    
+//    OVERSAMPLING
+    oversamplingBox.setBounds(bounds.getWidth() * 0.75, bounds.getHeight() * 0.932, oversamplingBox.getWidth(), bypassButton.getHeight());
+
     
 //    GROUPS
     cutFiltersGroup.setBounds(leftMargin, y, groupWidth, height);
