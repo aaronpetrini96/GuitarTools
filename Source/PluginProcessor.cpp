@@ -107,6 +107,8 @@ void GuitarToolsAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     spec.sampleRate = sampleRate;
     spec.numChannels = getTotalNumInputChannels();
     
+    smoothedBypassValue.reset(sampleRate, 0.01);
+    
 //==============================================================================
 //    Compressor Section
     compressors[1].prepare(spec);
@@ -185,8 +187,12 @@ void GuitarToolsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
+    
+// Save a dry copy before processing
+    juce::AudioBuffer<float> dryBuffer;
+    dryBuffer.makeCopyOf(buffer);
 
-//    Compressor part
+//========================    COMP part    ========================
     updateCompState();
     
     leftChannelFifo.update(buffer);
@@ -215,18 +221,22 @@ void GuitarToolsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     
     applyGain(buffer, outputGain);
     
-//    EQ part
+//========================    EQ part    ========================
     auto chainSettings = getChainSettings(treeState);
 
     updateFilters();
     
     juce::dsp::AudioBlock<float> block {buffer};
     
-    if (chainSettings.pluginBypass != 0)
-    {
-        return; // true bypass: leave buffer unprocessed
-    }
+//    if (chainSettings.pluginBypass != 0)
+//    {
+//
+//        return; // true bypass: leave buffer unprocessed
+//    }
     
+    // Update smoothed bypass target
+    bool bypassActive = (chainSettings.pluginBypass != 0);
+    smoothedBypassValue.setTargetValue(bypassActive ? 0.0f : 1.0f);
     
 //    Oversampling
     /*
@@ -271,13 +281,35 @@ void GuitarToolsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     if (totalNumInputChannels > 1)
         rightBlock = block.getSingleChannelBlock(1);
 
-    
-
     juce::dsp::ProcessContextReplacing<float> leftContext {leftBlock};
     juce::dsp::ProcessContextReplacing<float> rightContext {rightBlock};
 
     leftChain.process(leftContext);
     rightChain.process(rightContext);
+    
+    
+
+    if ((smoothedBypassValue.getTargetValue() == 0.0f) &&
+        (smoothedBypassValue.getCurrentValue() == 0.0f))
+    {
+        // Fully bypassed, clear buffer for true silence
+        buffer.clear();
+    }
+    else
+    {
+        // Smooth crossfade
+        for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
+        {
+            auto* wet = buffer.getWritePointer(channel);
+            auto* dry = dryBuffer.getReadPointer(channel);
+
+            for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+            {
+                float mix = smoothedBypassValue.getNextValue();
+                wet[sample] = wet[sample] * mix + dry[sample] * (1.0f - mix);
+            }
+        }
+    }
 }
 
 //==============================================================================
