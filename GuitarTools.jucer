@@ -5,6 +5,15 @@
               cppLanguageStandard="latest">
   <MAINGROUP id="dcQ1Q0" name="GuitarTools">
     <GROUP id="{9FE85DB9-FEF9-D00B-7F4E-44BB06F723AF}" name="Source">
+      <GROUP id="{A5AD8FE6-194E-3246-3545-5B7DC0150748}" name="DSP">
+        <FILE id="Yltf4E" name="CompressorBand.cpp" compile="1" resource="0"
+              file="Source/DSP/CompressorBand.cpp"/>
+        <FILE id="K70fL8" name="CompressorBand.h" compile="0" resource="0"
+              file="Source/DSP/CompressorBand.h"/>
+        <FILE id="Yetc4O" name="Fifo.h" compile="0" resource="0" file="Source/DSP/Fifo.h"/>
+        <FILE id="w1Lzl2" name="SingleChannelSampleFifo.h" compile="0" resource="0"
+              file="Source/DSP/SingleChannelSampleFifo.h"/>
+      </GROUP>
       <GROUP id="{713458A5-CBDF-5E76-6944-B0118BBEE9AC}" name="GUI">
         <FILE id="xgfSKr" name="Button.cpp" compile="1" resource="0" file="Source/GUI/Button.cpp"/>
         <FILE id="QJBtPO" name="Button.h" compile="0" resource="0" file="Source/GUI/Button.h"/>

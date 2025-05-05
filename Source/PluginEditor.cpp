@@ -59,6 +59,13 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
     buttonsGroup.addAndMakeVisible(resoFreqSlider);
     buttonsGroup.addAndMakeVisible(mudButton);
     buttonsGroup.addAndMakeVisible(mudFreqSlider);
+    buttonsGroup.addAndMakeVisible(compBypassButton);
+    buttonsGroup.addAndMakeVisible(compThresholdSlider);
+    
+    compRatioBox.setColour(juce::ComboBox::ColourIds::backgroundColourId, juce::Colour(100, 100, 110).darker(0.5f));
+    compRatioBox.setColour(juce::ComboBox::ColourIds::outlineColourId, juce::Colours::transparentBlack);
+    compRatioBox.setLookAndFeel(ComboBoxLookAndFeel::get());
+    buttonsGroup.addAndMakeVisible(compRatioBox);
     addAndMakeVisible(buttonsGroup);
     
     shelfFiltersGroup.setText("Expression");
@@ -134,14 +141,15 @@ void GuitarToolsAudioProcessorEditor::resized()
     
 //    BUTTONS GROUP
     auto middleButtonsGroup = (buttonsGroup.getWidth() - resoButton.getWidth()) * 0.5;
-    resoButton.setTopLeftPosition(middleButtonsGroup, leftMargin * 3);
-    resoFreqSlider.setBounds(resoButton.getX() * 0.6, resoButton.getHeight() * 1.4, resoFreqSlider.getWidth(), resoFreqSlider.getHeight());
+    resoButton.setTopLeftPosition(middleButtonsGroup, leftMargin * 2.1);
+    resoFreqSlider.setBounds(resoButton.getX() * 0.6, resoButton.getBottom() * 0.89, resoFreqSlider.getWidth(), resoFreqSlider.getHeight());
     
-    mudButton.setTopLeftPosition(middleButtonsGroup, resoButton.getBottom() * 1.5);
-    mudFreqSlider.setBounds(resoFreqSlider.getX(), mudButton.getHeight() * 3.15, mudButton.getWidth() * 1.5, mudButton.getHeight());
+    mudButton.setTopLeftPosition(middleButtonsGroup, resoButton.getBottom() * 1.35);
+    mudFreqSlider.setBounds(resoFreqSlider.getX(), mudButton.getBottom() * 0.95, mudButton.getWidth() * 1.5, mudButton.getHeight());
     
-    presetBox.setBounds(bounds.getWidth() * 0.31, bypassButton.getY(), resoFreqSlider.getWidth() * 0.8, highCutSlopeBox.getHeight());
-    savePresetButton.setBounds(presetBox.getRight() * 1.05, bypassButton.getY(), presetBox.getWidth() * 0.5, presetBox.getHeight());
+    compBypassButton.setTopLeftPosition(middleButtonsGroup, mudButton.getBottom() * 1.18);
+    compThresholdSlider.setBounds(resoFreqSlider.getX(),compBypassButton.getBottom() * 0.965 , compThresholdSlider.getWidth(), compThresholdSlider.getHeight());
+    compRatioBox.setBounds(compBypassButton.getX() * 1.5, highCutSlopeBox.getY(), lowCutSlopeBox.getWidth(), lowCutSlopeBox.getHeight());
 
 //    SHELF GROUP
     highShelfGainKnob.setTopLeftPosition((shelfFiltersGroup.getWidth() - highShelfGainKnob.getWidth()) * 0.5, leftMargin * 1.5);
@@ -153,6 +161,10 @@ void GuitarToolsAudioProcessorEditor::resized()
     depth1.setBounds(lowShelfGainKnob.getX() * 0.52, lowShelfGainKnob.getHeight() * 2.59, presenceButtonsSize, presenceButtonsSize);
     depth2.setBounds((depth1.getX() + depth1.getWidth()) + leftMargin, lowShelfGainKnob.getHeight() * 2.59, presenceButtonsSize, presenceButtonsSize);
     depth3.setBounds((depth2.getX() + depth1.getWidth()) + leftMargin, lowShelfGainKnob.getHeight() * 2.59, presenceButtonsSize, presenceButtonsSize);
+    
+//   PRESET BOX
+    presetBox.setBounds(bounds.getWidth() * 0.31, bypassButton.getY(), resoFreqSlider.getWidth() * 0.8, highCutSlopeBox.getHeight());
+    savePresetButton.setBounds(presetBox.getRight() * 1.05, bypassButton.getY(), presetBox.getWidth() * 0.5, presetBox.getHeight());
     
 }
 

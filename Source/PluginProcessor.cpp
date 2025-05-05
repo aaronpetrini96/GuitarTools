@@ -23,6 +23,9 @@ GuitarToolsAudioProcessor::GuitarToolsAudioProcessor()
 #endif
 {
 //    oversamplingFactor = 1;
+    linkCompParameters();
+//    bypassParam = getChainSettings(treeState).compBypass;
+    
 }
 
 GuitarToolsAudioProcessor::~GuitarToolsAudioProcessor()
@@ -102,16 +105,40 @@ void GuitarToolsAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     juce::dsp::ProcessSpec spec;
     spec.maximumBlockSize = samplesPerBlock;
     spec.sampleRate = sampleRate;
-    spec.numChannels = 1;
+    spec.numChannels = getTotalNumInputChannels();
+    
+//==============================================================================
+//    Compressor Section
+    compressors[1].prepare(spec);
+    
+    LP1.prepare(spec);
+    HP1.prepare(spec);
+    AP2.prepare(spec);
+    LP2.prepare(spec);
+    HP2.prepare(spec);
+    
+    inputGain.prepare(spec);
+    inputGain.setRampDurationSeconds(0.05);
+    outputGain.prepare(spec);
+    outputGain.setRampDurationSeconds(0.05);
+    
+    for (auto& buffer : filterBuffers)
+        buffer.setSize(spec.numChannels, samplesPerBlock);
+    
+    leftChannelFifo.prepare(samplesPerBlock);
+    rightChannelFifo.prepare(samplesPerBlock);
+    
+    gain.prepare(spec);
+    gain.setGainDecibels(-12.f);
+    
+//==============================================================================
     
 //    updateOversampling(getChainSettings(treeState));
 //    if (oversampling)
 //        oversampling->initProcessing(static_cast<size_t>(samplesPerBlock));
-    
+    spec.numChannels = 1;
     leftChain.prepare(spec);
     rightChain.prepare(spec);
-    
-    
     updateFilters();
 
 
@@ -158,14 +185,33 @@ void GuitarToolsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-//
-//    if (buffer.getNumChannels() == 1 && buffer.getNumSamples() > 0)
-//    {
-//        // Create stereo by duplicating channel 0 to channel 1, if 2nd channel exists
-//        buffer.setSize(2, buffer.getNumSamples(), true, true, true);
-//        buffer.copyFrom(1, 0, buffer, 0, 0, buffer.getNumSamples());
-//    }
 
+//    Compressor part
+    updateCompState();
+    leftChannelFifo.update(buffer);
+    rightChannelFifo.update(buffer);
+    
+    applyGain(buffer, inputGain);
+    
+    splitBands(buffer);
+    compressors[1].process(filterBuffers[1]); //only process midband
+    
+    auto numSamples = buffer.getNumSamples();
+    auto numChannels = buffer.getNumChannels();
+    buffer.clear();
+    
+    auto addFilterBand = [nc=numChannels, ns=numSamples](auto& inputBuffer, const auto& source)
+    {
+        for(auto i{0};i<nc;++i)
+            inputBuffer.addFrom(i, 0, source, i, 0, ns);
+    };
+    
+    for(size_t i{0}; i < compressors.size(); ++i)
+        addFilterBand(buffer, filterBuffers[i]);
+    
+    applyGain(buffer, outputGain);
+    
+//    EQ part
     auto chainSettings = getChainSettings(treeState);
 
     updateFilters();
@@ -177,6 +223,8 @@ void GuitarToolsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
         return; // true bypass: leave buffer unprocessed
     }
     
+    
+//    Oversampling
     /*
     
     if (oversampling)
@@ -298,12 +346,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout GuitarToolsAudioProcessor::c
         stringArray.add(str);
     }
     
-    
     layout.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID("LowCut Slope", 1),"LowCut Slope", stringArray, 0));
     layout.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID("HighCut Slope", 1),"HighCut Slope", stringArray, 0));
 
-    
-    
 //    ========== HIGH/LOW SHELVE  ===========
     juce::StringArray presenceFreqArray {"4.5 kHz", "6 kHz", "8 kHz"};
     layout.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID("Presence Freq", 1), "Presence Freq", presenceFreqArray, 0));
@@ -328,6 +373,39 @@ juce::AudioProcessorValueTreeState::ParameterLayout GuitarToolsAudioProcessor::c
 //    ========== OVERSAMPLING ===========
     layout.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID("Oversampling", 1), "Oversampling", juce::StringArray {"Off", "2x", "4x", "8x"}, 0));
     
+    
+    
+    //==============================================================================
+    //==============================================================================
+//    COMPRESSOR
+    
+    auto gainRange = juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f);
+    layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("Comp Gain In", 1),"Comp Gain In", gainRange, 0.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("Comp Gain Out", 1),"Comp Gain Out", gainRange, 0.f));
+    
+    auto thresholdRange = juce::NormalisableRange<float>(MIN_THRESHOLD, MAX_DECIBELS, 1.f, 1.f);
+    layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("Threshold", 1),"Threshold", thresholdRange, 0.f));
+    
+    auto attackReleaseRange = juce::NormalisableRange<float> (5.f, 500.f, 1.f, 1.f);
+    layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("Attack", 1),"Attack", attackReleaseRange, 30.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("Release", 1),"Release", attackReleaseRange, 50.f));
+    
+    auto choices = std::vector<double>{1,1.4,2,3,4,8,10,20,50,100};
+    juce::StringArray sa;
+    for (auto choice: choices)
+        sa.add(juce::String(choice, 1));
+    layout.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID("Ratio", 1),"Ratio", sa, 4));
+    
+    layout.add(std::make_unique<juce::AudioParameterBool>(juce::ParameterID("Comp Bypass", 1), "Comp Bypass", true));
+    
+    //CROSSOVER FREQS
+    auto lowMidCrossoverRange = juce::NormalisableRange<float>(MIN_FREQ, 149.9f, 1.f, 1.f);
+    auto midHighCrossoverRange = juce::NormalisableRange<float>(150.f, MAX_FREQ, 1.f, 1.f);
+    layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("LowMid Crossover Freq", 1),"LowMid Crossover Freq", lowMidCrossoverRange, 70.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("MidHigh Crossover Freq", 1),"MidHigh Crossover Freq", lowMidCrossoverRange, 210.f));
+    
+    
+    
 //    ========== RETURN LAYOUT ===========
     return layout;
 }
@@ -350,36 +428,21 @@ ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& treeState)
     settings.resoBypass = treeState.getRawParameterValue("Reso Bypass")->load() < 0.5f;
     settings.resoFreq = treeState.getRawParameterValue("Reso Freq")->load();
     settings.oversamplingFactor = static_cast<OversamplingFactor>(treeState.getRawParameterValue("Oversampling")->load());
+    settings.pluginBypass = treeState.getRawParameterValue("Plugin Bypass")->load() > 0.5;
     
 //    presence
-    if (settings.presenceIndex == 0)
-    {
-        settings.presenceFreq = 4500.f;
-    }
-    else if (settings.presenceIndex == 1)
-    {
-        settings.presenceFreq = 6000.f;
-    }
-    else if (settings.presenceIndex == 2)
-    {
-        settings.presenceFreq = 8000.f;
-    }
-    
-//    Depth
-    if (settings.depthIndex == 0)
-    {
-        settings.depthFreq = 60.f;
-    }
-    else if (settings.depthIndex == 1)
-    {
-        settings.depthFreq = 100.f;
-    }
-    else if (settings.depthIndex == 2)
-    {
-        settings.depthFreq = 170.f;
-    }
+    if (settings.presenceIndex == 0) {settings.presenceFreq = 4500.f;}
+    else if (settings.presenceIndex == 1) { settings.presenceFreq = 6000.f;}
+    else if (settings.presenceIndex == 2) {settings.presenceFreq = 8000.f;}
 
-    settings.pluginBypass = treeState.getRawParameterValue("Plugin Bypass")->load() > 0.5;
+//    Depth
+    if (settings.depthIndex == 0) {settings.depthFreq = 60.f;}
+    else if (settings.depthIndex == 1) {settings.depthFreq = 100.f;}
+    else if (settings.depthIndex == 2) {settings.depthFreq = 170.f;}
+
+
+//    settings.compBypass = (treeState.getRawParameterValue("Comp Bypass")->load() < 0.5f);
+    
     
     return settings;
 }
@@ -497,7 +560,71 @@ void GuitarToolsAudioProcessor::updateFilters()
 //==============================================================================
 //==============================================================================
 
+void GuitarToolsAudioProcessor::linkCompParameters()
+{
 
+    midBandComp.attack = dynamic_cast<juce::AudioParameterFloat*>(treeState.getParameter(juce::ParameterID("Attack", 1).getParamID()));
+    midBandComp.release = dynamic_cast<juce::AudioParameterFloat*>(treeState.getParameter(juce::ParameterID("Release", 1).getParamID()));
+    midBandComp.threshold = dynamic_cast<juce::AudioParameterFloat*>(treeState.getParameter(juce::ParameterID("Threshold", 1).getParamID()));
+    midBandComp.ratio = dynamic_cast<juce::AudioParameterChoice*>(treeState.getParameter(juce::ParameterID("Ratio", 1).getParamID()));
+    midBandComp.bypassed = dynamic_cast<juce::AudioParameterBool*>(treeState.getParameter(juce::ParameterID("Comp Bypass", 1).getParamID()));
+    
+    lowMidCrossover = dynamic_cast<juce::AudioParameterFloat*>(treeState.getParameter(juce::ParameterID("LowMid Crossover Freq", 1).getParamID()));
+    midHighCrossover = dynamic_cast<juce::AudioParameterFloat*>(treeState.getParameter(juce::ParameterID("MidHigh Crossover Freq", 1).getParamID()));
+    
+    inputGainParam = dynamic_cast<juce::AudioParameterFloat*>(treeState.getParameter(juce::ParameterID("Comp Gain In", 1).getParamID()));
+    outputGainParam = dynamic_cast<juce::AudioParameterFloat*>(treeState.getParameter(juce::ParameterID("Comp Gain Out", 1).getParamID()));
+    
+    using FilterType = juce::dsp::LinkwitzRileyFilterType;
+    LP1.setType(FilterType::lowpass);
+    HP1.setType(FilterType::highpass);
+    AP2.setType(FilterType::allpass);
+    LP2.setType(FilterType::lowpass);
+    HP2.setType(FilterType::highpass);
+    
+}
+
+
+
+void GuitarToolsAudioProcessor::updateCompState()
+{
+    
+   
+    compressors[1].updateCompressorSettings();
+    
+    auto lowMidCutoffFreq = lowMidCrossover -> get();
+    LP1.setCutoffFrequency(lowMidCutoffFreq);
+    HP1.setCutoffFrequency(lowMidCutoffFreq);
+    
+    auto midHighCutoffFreq = midHighCrossover -> get();
+    AP2.setCutoffFrequency(midHighCutoffFreq);
+    LP2.setCutoffFrequency(midHighCutoffFreq);
+    HP2.setCutoffFrequency(midHighCutoffFreq);
+    
+    inputGain.setGainDecibels(inputGainParam->get());
+    outputGain.setGainDecibels(outputGainParam->get());
+}
+
+void GuitarToolsAudioProcessor::splitBands(const juce::AudioBuffer<float> &inputBuffer)
+{
+    for(auto& filterBuffer : filterBuffers)
+        filterBuffer = inputBuffer;
+    
+    auto fb0Block = juce::dsp::AudioBlock<float>(filterBuffers[0]); //lowpass audio
+    auto fb1Block = juce::dsp::AudioBlock<float>(filterBuffers[1]);
+    auto fb2Block = juce::dsp::AudioBlock<float>(filterBuffers[2]);
+    
+    auto fb0Ctx = juce::dsp::ProcessContextReplacing<float>(fb0Block);
+    auto fb1Ctx = juce::dsp::ProcessContextReplacing<float>(fb1Block);
+    auto fb2Ctx = juce::dsp::ProcessContextReplacing<float>(fb2Block);
+    
+    LP1.process(fb0Ctx);
+    AP2.process(fb0Ctx);
+    HP1.process(fb1Ctx);
+    filterBuffers[2]=filterBuffers[1];
+    LP2.process(fb1Ctx);
+    HP2.process(fb2Ctx);
+}
 
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()

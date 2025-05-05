@@ -9,7 +9,8 @@
 #pragma once
 
 #include <JuceHeader.h>
-
+#include "DSP/CompressorBand.h"
+#include "DSP/SingleChannelSampleFifo.h"
 
 enum Slope
 {
@@ -35,7 +36,7 @@ struct ChainSettings
     float presenceGain {0}, depthGain{0};
     int presenceIndex{0}, depthIndex{0};
     
-    bool resoBypass {false}, mudBypass {false}, pluginBypass {false};
+    bool resoBypass {false}, mudBypass {false}, pluginBypass {false}, compBypass {false};
 
     OversamplingFactor oversamplingFactor {OversamplingFactor::Off};
     Slope lowCutSlope {Slope::Slope_12}, highCutSlope {Slope::Slope_12};
@@ -90,11 +91,25 @@ public:
     void loadDefaultPreset();
     //==============================================================================
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
-    
     juce::AudioProcessorValueTreeState treeState {*this, nullptr, "Parameters", createParameterLayout()};
+    
+    
+    SingleChannelSampleFifo <juce::AudioBuffer<float>> leftChannelFifo {Channel::Left};
+    SingleChannelSampleFifo <juce::AudioBuffer<float>> rightChannelFifo {Channel::Right};
+    
+    std::array<CompressorBand,3> compressors;
+    CompressorBand& lowBandComp = compressors[0];
+    CompressorBand& midBandComp = compressors[1];
+    CompressorBand& highBandComp = compressors[2];
 
+    
+    
 private:
     
+    
+    //==============================================================================
+//    EQ PART
+    //==============================================================================
     size_t oversamplingFactor{1};
     
     void updateOversampling(const ChainSettings& chainSettings);
@@ -103,10 +118,9 @@ private:
     std::unique_ptr<juce::dsp::Oversampling<float>> oversampling;
     
 //    Declare Filter types and Process Chains
-    using Filter = juce::dsp::IIR::Filter<float>;
-    using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
-    
-    using MonoChain = juce::dsp::ProcessorChain<CutFilter, Filter, Filter, Filter, Filter, CutFilter>;
+    using EQFilter = juce::dsp::IIR::Filter<float>;
+    using CutFilter = juce::dsp::ProcessorChain<EQFilter, EQFilter, EQFilter, EQFilter>;
+    using MonoChain = juce::dsp::ProcessorChain<CutFilter, EQFilter, EQFilter, EQFilter, EQFilter, CutFilter>;
     MonoChain leftChain, rightChain;
     
     enum ChainPositions
@@ -119,16 +133,17 @@ private:
         HighCut
     };
     
+//    =====  UPDATE COEFFICIENTS =====
+    
+    using Coefficients = EQFilter::CoefficientsPtr; //alias for type needed to update coef
+    static void updateCoefficients(Coefficients& old, const Coefficients& replacements);
+    
+//    =====  UPDATE FILTERS =====
     void updateBellFitlers(const ChainSettings& chainSettings);
     void updateShelfFilters(const ChainSettings& chainSettings);
     void updateLowCutFilters(const ChainSettings& chainSettings);
     void updateHighCutFilters(const ChainSettings& chainSettings);
     void updateFilters();
-    
-    using Coefficients = Filter::CoefficientsPtr; //alias for type needed to update coef
-    static void updateCoefficients(Coefficients& old, const Coefficients& replacements);
-    
-//    =====  UPDATE CUT FILTERS =====
     
     template<int Index, typename ChainType, typename CoefficientType>
     void update(ChainType& chain, const CoefficientType& cutCoefficients)
@@ -173,7 +188,40 @@ private:
         
     }
 
+    //==============================================================================
+//    COMPRESSOR PART
+    //==============================================================================
     
+    using CompFilter = juce::dsp::LinkwitzRileyFilter<float>;
+    CompFilter LP1, HP1, AP2, LP2, HP2;
+    
+    juce::AudioBuffer<float> apBuffer;
+    
+    juce::AudioParameterFloat* lowMidCrossover {nullptr};
+    juce::AudioParameterFloat* midHighCrossover {nullptr};
+    
+    std::array<juce::AudioBuffer<float>, 3> filterBuffers;
+    
+    juce::dsp::Gain<float> inputGain, outputGain;
+    juce::AudioParameterFloat* inputGainParam {nullptr};
+    juce::AudioParameterFloat* outputGainParam {nullptr};
+    juce::AudioParameterBool* bypassParam{nullptr};
+    
+    template<typename T, typename U>
+    void applyGain(T& buffer, U& gain)
+    {
+        auto block = juce::dsp::AudioBlock<float>(buffer);
+        auto ctx = juce::dsp::ProcessContextReplacing<float>(block);
+        gain.process(ctx);
+    }
+    
+    void updateCompState();
+    void splitBands(const juce::AudioBuffer<float>& inputBuffer);
+    
+    void linkCompParameters();
+    
+//    juce::dsp::Oscillator<float> osc;
+    juce::dsp::Gain<float> gain;
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GuitarToolsAudioProcessor)
