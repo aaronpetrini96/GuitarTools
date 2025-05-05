@@ -102,7 +102,7 @@ void GuitarToolsAudioProcessorEditor::paint (juce::Graphics& g)
     g.setColour (juce::Colours::white.withAlpha(0.9f));
     g.setFont(16.f);
     g.getCurrentFont();
-    g.drawFittedText("GUITAR TOOLS v1", -25, getLocalBounds().getHeight() * 0.932, 200, 20, juce::Justification::centred, 1);
+    g.drawFittedText("GUITAR TOOLS v2", -25, getLocalBounds().getHeight() * 0.932, 200, 20, juce::Justification::centred, 1);
 }
 
 void GuitarToolsAudioProcessorEditor::resized()
