@@ -9,6 +9,8 @@ enum Channel
 {
     Left, //effectively 0
     Right //effectively 1
+//    Right, //0
+//    Left //1
     
 };
 

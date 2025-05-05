@@ -188,8 +188,12 @@ void GuitarToolsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
 
 //    Compressor part
     updateCompState();
+    
     leftChannelFifo.update(buffer);
-    rightChannelFifo.update(buffer);
+    if (buffer.getNumChannels() > 1) {
+        rightChannelFifo.update(buffer);
+    }
+//    rightChannelFifo.update(buffer);
     
     applyGain(buffer, inputGain);
     
