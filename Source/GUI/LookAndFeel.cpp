@@ -215,14 +215,7 @@ void ComboBoxLookAndFeel::drawComboBox(juce::Graphics &g, int width, int height,
 //    g.setColour (juce::Colour(138, 138, 138));
     g.drawRoundedRectangle (boxBounds.toFloat().reduced (1.f, 1.f), cornerSize, 2.f);
 
-//    Rectangle<int> arrowZone (width - 30, 0, 20, height);
-//    Path path;
-//    path.startNewSubPath ((float) arrowZone.getX() + 3.0f, (float) arrowZone.getCentreY() - 2.0f);
-//    path.lineTo ((float) arrowZone.getCentreX(), (float) arrowZone.getCentreY() + 3.0f);
-//    path.lineTo ((float) arrowZone.getRight() - 3.0f, (float) arrowZone.getCentreY() - 2.0f);
-
-//    g.setColour (box.findColour (ComboBox::arrowColourId).withAlpha ((box.isEnabled() ? 0.9f : 0.2f)));
-//    g.strokePath (path, PathStrokeType (2.0f));
+    
 }
 
 juce::Font ComboBoxLookAndFeel::getLabelFont([[maybe_unused]] juce::Label& label)

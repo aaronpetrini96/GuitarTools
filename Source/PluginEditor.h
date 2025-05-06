@@ -44,6 +44,9 @@ private:
     RotaryKnob lowShelfGainKnob {"Depth", audioProcessor.treeState, juce::ParameterID("Depth Gain", 1), " dB", true};
     RotaryKnob highShelfGainKnob {"Presence", audioProcessor.treeState, juce::ParameterID("Presence Gain", 1), " dB", true};
     
+    HorizontalSlider inputGain {"InGain", audioProcessor.treeState, juce::ParameterID("Comp Gain In",1), " dB"};
+    HorizontalSlider outputGain {"OutGain", audioProcessor.treeState, juce::ParameterID("Comp Gain Out",1), " dB"};
+    
     juce::TextButton presence1 {"1"};
     juce::TextButton presence2 {"2"};
     juce::TextButton presence3 {"3"};
@@ -67,7 +70,7 @@ private:
     std::vector<juce::String> oversamplingOptions { "Off (OS)", "2x", "4x", "8x" };
     OptionBox oversamplingBox {oversamplingOptions, audioProcessor.treeState, juce::ParameterID("Oversampling",1)};
     
-    std::vector<juce::String> ratioChoices = {"1","1.4","2","3","4","8","10","20","50","100"};
+    std::vector<juce::String> ratioChoices = {"1:1","1.4:1","2:1","3:1","4:1","8:1","10:1","20:1","50:1","100:1"};
     OptionBox compRatioBox {ratioChoices, audioProcessor.treeState, juce::ParameterID("Ratio",1)};
     
     Button resoButton {"Tame Resonance", audioProcessor.treeState, juce::ParameterID("Reso Bypass", 1)};

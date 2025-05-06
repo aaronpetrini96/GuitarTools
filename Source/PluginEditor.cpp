@@ -5,6 +5,7 @@
 GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
+
     
 //  PRESENCE BUTTONS
     presence1.onClick = [this]() {setPresenceFreq(0);};
@@ -57,15 +58,26 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
     
     buttonsGroup.addAndMakeVisible(resoButton);
     buttonsGroup.addAndMakeVisible(resoFreqSlider);
+    resoFreqSlider.setVisible(resoButton.getToggleState());
+    resoButton.onClick = [this](){resoFreqSlider.setVisible(resoButton.getToggleState());};
     buttonsGroup.addAndMakeVisible(mudButton);
     buttonsGroup.addAndMakeVisible(mudFreqSlider);
+    mudFreqSlider.setVisible(mudButton.getToggleState());
+    mudButton.onClick = [this](){mudFreqSlider.setVisible(mudButton.getToggleState());};
     buttonsGroup.addAndMakeVisible(compBypassButton);
     buttonsGroup.addAndMakeVisible(compThresholdSlider);
-    
+    compThresholdSlider.setVisible(compBypassButton.getToggleState());
     compRatioBox.setColour(juce::ComboBox::ColourIds::backgroundColourId, juce::Colour(100, 100, 110).darker(0.5f));
     compRatioBox.setColour(juce::ComboBox::ColourIds::outlineColourId, juce::Colours::transparentBlack);
     compRatioBox.setLookAndFeel(ComboBoxLookAndFeel::get());
     buttonsGroup.addAndMakeVisible(compRatioBox);
+    compRatioBox.setVisible(compBypassButton.getToggleState());
+    compBypassButton.onClick = [this]()
+    {
+        bool state = compBypassButton.getToggleState();
+        compThresholdSlider.setVisible(state);
+        compRatioBox.setVisible(state);
+    };
     addAndMakeVisible(buttonsGroup);
     
     shelfFiltersGroup.setText("Expression");
@@ -86,6 +98,7 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
     addAndMakeVisible(shelfFiltersGroup);
     
     addAndMakeVisible(bypassButton);
+//    addAndMakeVisible(inputGain);
     setLookAndFeel(&mainLF);
 
     setSize (500, 360);
@@ -120,9 +133,10 @@ void GuitarToolsAudioProcessorEditor::resized()
     auto leftMargin = bounds.getWidth() * 0.02;
     auto presenceButtonsSize = leftMargin * 2.5;
     auto groupWidth = bounds.getWidth() * 0.245;
-    
+//    auto inputGainHeight = bounds.getHeight() * JUCE_LIVE_CONSTANT(0.95);
 //    BYPASS
     bypassButton.setBounds(bounds.getWidth() * 0.93, bounds.getHeight() * 0.932, bypassButton.getWidth(), bypassButton.getHeight());
+//    inputGain.setBounds(bounds.getWidth() * JUCE_LIVE_CONSTANT(0.23), inputGainHeight, inputGain.getWidth(), inputGain.getHeight());
     
 //    OVERSAMPLING
     oversamplingBox.setBounds(bounds.getWidth() * 0.75, bounds.getHeight() * 0.932, oversamplingBox.getWidth(), bypassButton.getHeight());
@@ -142,7 +156,7 @@ void GuitarToolsAudioProcessorEditor::resized()
 //    BUTTONS GROUP
     auto middleButtonsGroup = (buttonsGroup.getWidth() - resoButton.getWidth()) * 0.5;
     resoButton.setTopLeftPosition(middleButtonsGroup, leftMargin * 2.1);
-    resoFreqSlider.setBounds(resoButton.getX() * 0.6, resoButton.getBottom() * 0.89, resoFreqSlider.getWidth(), resoFreqSlider.getHeight());
+    resoFreqSlider.setBounds(resoButton.getX() * 0.6, resoButton.getBottom() * 0.89, 150, 30);
     
     mudButton.setTopLeftPosition(middleButtonsGroup, resoButton.getBottom() * 1.35);
     mudFreqSlider.setBounds(resoFreqSlider.getX(), mudButton.getBottom() * 0.95, mudButton.getWidth() * 1.5, mudButton.getHeight());
@@ -150,6 +164,7 @@ void GuitarToolsAudioProcessorEditor::resized()
     compBypassButton.setTopLeftPosition(middleButtonsGroup, mudButton.getBottom() * 1.18);
     compThresholdSlider.setBounds(resoFreqSlider.getX(),compBypassButton.getBottom() * 0.965 , compThresholdSlider.getWidth(), compThresholdSlider.getHeight());
     compRatioBox.setBounds(compBypassButton.getX() * 1.5, highCutSlopeBox.getY(), lowCutSlopeBox.getWidth(), lowCutSlopeBox.getHeight());
+    
 
 //    SHELF GROUP
     highShelfGainKnob.setTopLeftPosition((shelfFiltersGroup.getWidth() - highShelfGainKnob.getWidth()) * 0.5, leftMargin * 1.5);

@@ -61,6 +61,7 @@ HorizontalSlider::HorizontalSlider(const juce::String& text,
     slider.setColour(juce::Slider::ColourIds::thumbColourId, juce::Colours::red.withAlpha(0.8f));
     slider.setColour(juce::Slider::ColourIds::trackColourId, juce::Colours::grey.withAlpha(0.3f));
     
+    
     slider.setTextBoxStyle(juce::Slider::TextBoxLeft, false, 60, 20);
     if (suffix != "") {
         slider.setTextValueSuffix(suffix);
@@ -82,6 +83,8 @@ HorizontalSlider::HorizontalSlider(const juce::String& text,
     slider.setRotaryParameters(1.25f*pi, 2.75f*pi, true);
     
     slider.getProperties().set("drawFromMiddle", drawFromMiddle);
+    
+   
 
 }
 
@@ -96,7 +99,7 @@ void HorizontalSlider::paint (juce::Graphics& g)
 
 void HorizontalSlider::resized()
 {
-//    slider.setTopLeftPosition(0, 24);
+
 }
 
 void HorizontalSlider::drawLinearSliderOutline (juce::Graphics& g, int, int, int, int,
@@ -119,11 +122,6 @@ void HorizontalSlider::drawLinearSlider (juce::Graphics& g, int x, int y, int wi
     if (style == juce::Slider::LinearBar || style == juce::Slider::LinearBarVertical)
     {
         const bool isMouseOver = slider.isMouseOverOrDragging() && slider.isEnabled();
-
-        auto baseColour = LookAndFeelHelpers::createBaseColour (slider.findColour (juce::Slider::thumbColourId)
-                                                                              .withMultipliedSaturation (slider.isEnabled() ? 1.0f : 0.5f),
-                                                                        false, isMouseOver,
-                                                                        isMouseOver || slider.isMouseButtonDown());
 
         drawLinearSliderOutline (g, x, y, width, height, style, slider);
     }
@@ -219,6 +217,5 @@ void HorizontalSlider::drawLinearSliderThumb (juce::Graphics& g, int x, int y, i
   
     
 }
-
 
 

@@ -48,10 +48,13 @@ public:
                                                 float sliderPos, float minSliderPos, float maxSliderPos,
                                                   const juce::Slider::SliderStyle style, juce::Slider& slider) override;
     
+    
+    
     juce::Slider slider;
     juce::AudioProcessorValueTreeState::SliderAttachment attachment;
     juce::Label label;
 
 private:
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HorizontalSlider)
 };

@@ -22,10 +22,8 @@ GuitarToolsAudioProcessor::GuitarToolsAudioProcessor()
                        )
 #endif
 {
-//    oversamplingFactor = 1;
     linkCompParameters();
-//    bypassParam = getChainSettings(treeState).compBypass;
-    
+    loadDefaultPreset();
 }
 
 GuitarToolsAudioProcessor::~GuitarToolsAudioProcessor()
@@ -142,8 +140,8 @@ void GuitarToolsAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     leftChain.prepare(spec);
     rightChain.prepare(spec);
     updateFilters();
-
-
+//==============================================================================
+    loadDefaultPreset();
 }
 
 void GuitarToolsAudioProcessor::releaseResources()
@@ -288,26 +286,16 @@ void GuitarToolsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     rightChain.process(rightContext);
     
     
+    // Smooth crossfade
+    for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
+    {
+        auto* wet = buffer.getWritePointer(channel);
+        auto* dry = dryBuffer.getReadPointer(channel);
 
-    if ((smoothedBypassValue.getTargetValue() == 0.0f) &&
-        (smoothedBypassValue.getCurrentValue() == 0.0f))
-    {
-        // Fully bypassed, clear buffer for true silence
-        buffer.clear();
-    }
-    else
-    {
-        // Smooth crossfade
-        for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
+        for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
         {
-            auto* wet = buffer.getWritePointer(channel);
-            auto* dry = dryBuffer.getReadPointer(channel);
-
-            for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
-            {
-                float mix = smoothedBypassValue.getNextValue();
-                wet[sample] = wet[sample] * mix + dry[sample] * (1.0f - mix);
-            }
+            float mix = smoothedBypassValue.getNextValue();
+            wet[sample] = wet[sample] * mix + dry[sample] * (1.0f - mix);
         }
     }
 }
@@ -476,10 +464,6 @@ ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& treeState)
     else if (settings.depthIndex == 1) {settings.depthFreq = 100.f;}
     else if (settings.depthIndex == 2) {settings.depthFreq = 170.f;}
 
-
-//    settings.compBypass = (treeState.getRawParameterValue("Comp Bypass")->load() < 0.5f);
-    
-    
     return settings;
 }
 
@@ -590,6 +574,11 @@ void GuitarToolsAudioProcessor::updateFilters()
 //    updateOversampling(chainSettings);
 }
 
+void GuitarToolsAudioProcessor::loadDefaultPreset()
+{
+    loadPreset(juce::File::getSpecialLocation(juce::File::userDocumentsDirectory).getChildFile("DefaultPreset.xml"));
+               
+}
 
 //==============================================================================
 //==============================================================================

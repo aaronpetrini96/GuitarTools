@@ -16,27 +16,29 @@
 Button::Button(const juce::String& text, juce::AudioProcessorValueTreeState& apvts, const juce::ParameterID parameterID)
 : attachment(apvts, parameterID.getParamID(), button)
 {
-    
     button.setButtonText(text);
-    button.setToggleable(true);
-    button.setColour(juce::ToggleButton::ColourIds::textColourId, juce::Colours::white);
-//    button.setColour(juce::ToggleButton::ColourIds::tickColourId, juce::Colours::white);
-//    button.setColour(juce::ToggleButton::ColourIds::tickDisabledColourId, juce::Colour(160, 105, 134));
-//    button.setColour(juce::ToggleButton::ColourIds::tickDisabledColourId, juce::Colours::white.withAlpha(0.5f));
-
+//    button.setToggleable(true);
+    button.setClickingTogglesState(true);
+    
+//    button.setColour(juce::ToggleButton::ColourIds::textColourId, juce::Colours::white);
+    button.setColour(juce::TextButton::ColourIds::buttonColourId, juce::Colour(100, 100, 110).darker(0.5f));
+    button.setColour(juce::TextButton::ColourIds::buttonOnColourId, juce::Colour(0xFF40C4FF).darker(1.f));
+    button.setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentBlack);
+    button.setColour(juce::TextButton::ColourIds::textColourOnId, juce::Colours::white);
+    button.setColour(juce::TextButton::ColourIds::textColourOffId, juce::Colours::white);
     
     addAndMakeVisible(button);
     button.setBounds(0, 0, 120, 50);
     
     setSize(130, 60);
-    setLookAndFeel(ButtonLookAndFeel::get());
+//    setLookAndFeel(ButtonLookAndFeel::get());
     
-    // Hook up state change to start animation
+    // Forward the internal button's click to this class's onClick
     button.onClick = [this]()
     {
-        startAnimation();
+        if (onClick)
+            onClick();  // Call external onClick if set
     };
-
 }
 
 Button::~Button()
@@ -48,19 +50,48 @@ void Button::paint (juce::Graphics& g)
     
     auto bounds = button.getLocalBounds().toFloat();
     auto cornersize = bounds.getHeight() * 0.25f;
-    auto buttonRect = bounds.reduced(1.f, 1.f).withTrimmedBottom(1.f);
 
+    currentBackground = button.getToggleState() ? backgroundColourWhenOn : backgroundColourWhenOff;
 
-//    currentBackground = button.getToggleState() ? backgroundColourWhenOn : backgroundColourWhenOff;
+    auto baseColour = currentBackground.withMultipliedSaturation (button.hasKeyboardFocus (true) ? 1.3f : 0.9f)
+                                      .withMultipliedAlpha (button.isEnabled() ? 1.0f : 0.5f);
 
+    if (button.isDown() || button.isMouseOverOrDragging())
+        baseColour = baseColour.contrasting (button.isDown() ? 0.2f : 0.05f);
 
-    //background
-    g.setColour(currentBackground);
-    g.fillRoundedRectangle(buttonRect, cornersize);
+    g.setColour (baseColour);
 
-    // Outline
-//    g.setColour(juce::Colour(138, 138, 138));
-//    g.drawRoundedRectangle(buttonRect, cornersize, 2.f);
+    auto flatOnLeft   = button.isConnectedOnLeft();
+    auto flatOnRight  = button.isConnectedOnRight();
+    auto flatOnTop    = button.isConnectedOnTop();
+    auto flatOnBottom = button.isConnectedOnBottom();
+
+    if (flatOnLeft || flatOnRight || flatOnTop || flatOnBottom)
+    {
+        juce::Path path;
+        path.addRoundedRectangle (bounds.getX(), bounds.getY(),
+                                  bounds.getWidth(), bounds.getHeight(),
+                                  cornersize, cornersize,
+                                  ! (flatOnLeft  || flatOnTop),
+                                  ! (flatOnRight || flatOnTop),
+                                  ! (flatOnLeft  || flatOnBottom),
+                                  ! (flatOnRight || flatOnBottom));
+
+        g.fillPath (path);
+
+        g.setColour (button.findColour (juce::ComboBox::outlineColourId));
+        g.strokePath (path, juce::PathStrokeType (1.0f));
+    }
+    else
+    {
+        g.fillRoundedRectangle (bounds, cornersize);
+        g.setColour (juce::Colours::transparentBlack);
+        g.drawRoundedRectangle (bounds, cornersize, 1.0f);
+    }
+    
+    g.setColour(juce::Colours::white);
+    g.setFont(15.0f);
+    g.drawText(getName(), getLocalBounds(), juce::Justification::centred);
  
 }
 
@@ -71,28 +102,8 @@ void Button::resized()
 
 }
 
-void Button::startAnimation()
+
+bool Button::getToggleState()
 {
-    animationProgress = 0.0f;
-    startTimerHz(60); // 60 FPS
-    animatingForward = button.getToggleState();
-}
-
-void Button::timerCallback()
-{
-    animationProgress += 0.2f; // Speed (tweak this if needed)
-
-    if (animationProgress >= 1.0f)
-    {
-        animationProgress = 1.0f;
-        stopTimer();
-    }
-
-    float t = animationProgress;
-    if (!animatingForward)
-        t = 1.0f - t;
-
-    currentBackground = backgroundColourWhenOff.interpolatedWith(backgroundColourWhenOn, t);
-
-    button.repaint();
+    return button.getToggleState();
 }
