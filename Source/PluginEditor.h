@@ -17,7 +17,7 @@
 #include "GUI/HorizontalSlider.h"
 #include "GUI/ImgButton.h"
 #include "GUI/LevelMeter.h"
-
+#include "Utils/PresetManager.h"
 //==============================================================================
 /**
 */
@@ -85,18 +85,13 @@ private:
     
     ImgButton bypassButton{"Bypass Button", audioProcessor.treeState, juce::ParameterID("Plugin Bypass",1)};
     
-    
+    PresetManager presetManager;
     juce::ComboBox presetBox;
     juce::TextButton savePresetButton {"Save"};
-    void savePreset();
-    void loadPreset();
-    void presetSelected();
-    void refreshPresetList();
-    juce::File getPresetFolder();
-    std::unique_ptr<juce::FileChooser> fileChooser;
-    
+
     LevelMeter inputMeter;
     LevelMeter outputMeter;
+    
     
         
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GuitarToolsAudioProcessorEditor)

@@ -3,7 +3,7 @@
 
 //==============================================================================
 GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+    : AudioProcessorEditor (&p), audioProcessor (p), presetManager(p, presetBox)
 {
     
     
@@ -23,16 +23,17 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
     
 //  PRESET BUTTONS
     setShelfFilterButtonStyle(savePresetButton);
+    savePresetButton.setColour(juce::TextButton::ColourIds::buttonOnColourId, juce::Colour(100, 100, 110).darker(0.5f));
     addAndMakeVisible(savePresetButton);
-    savePresetButton.onClick = [this] {savePreset();};
+    savePresetButton.onClick = [this] {presetManager.savePreset();};
     
 //  PRESET DROPDOWN MENU
     presetBox.setTextWhenNothingSelected("Select Preset");
     presetBox.setColour(juce::ComboBox::ColourIds::backgroundColourId, juce::Colour(100, 100, 110).darker(0.5f));
     presetBox.setColour(juce::ComboBox::ColourIds::outlineColourId, juce::Colours::transparentBlack);
     presetBox.setLookAndFeel(ComboBoxLookAndFeel::get());
-    presetBox.onChange = [this]() {presetSelected();};
-    refreshPresetList();
+    presetBox.onChange = [this]() {presetManager.presetSelected();};
+    presetManager.refreshPresetList();
     addAndMakeVisible(presetBox);
     
 //    OVERSAMPLING
@@ -106,9 +107,8 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
     addAndMakeVisible(outputMeter);
     
     
-    setSize (700, 360);
-    auto bounds1 = getLocalBounds();
-    startTimerHz(30);
+    setSize (500, 360);
+//    startTimerHz(30);
 }
 
 GuitarToolsAudioProcessorEditor::~GuitarToolsAudioProcessorEditor()
@@ -248,77 +248,8 @@ void GuitarToolsAudioProcessorEditor::updateDepthButtons(const int& selectedInde
 
 //==============================================================================
 //==============================================================================
-void GuitarToolsAudioProcessorEditor::savePreset()
-{
-    auto presetFolder = getPresetFolder();
-    if (!presetFolder.exists())
-        presetFolder.createDirectory();
-    
-    fileChooser = std::make_unique<juce::FileChooser> ("Save Preset", presetFolder, "*.xml");
-    
-    auto fileChooserFlags = juce::FileBrowserComponent::saveMode;
-    
-    fileChooser->launchAsync (fileChooserFlags, [this] (const juce::FileChooser& fileChooser)
-    {
-        juce::File selectedFile = fileChooser.getResult();
-        
-        if (selectedFile.existsAsFile() || selectedFile.create())
-        {
-            // Save the preset to the selected file
-            audioProcessor.savePreset(selectedFile);
-            DBG("Preset saved to: " + selectedFile.getFullPathName());
-            
-            // Optionally, refresh the preset list in the UI or do other actions
-            refreshPresetList();
-        }
-        else
-        {
-            DBG("Error: Failed to save preset. File creation failed.");
-        };
-        
-    });
 
-}
 
-void GuitarToolsAudioProcessorEditor::loadPreset()
-{
-    juce::FileChooser chooser ("Load Preset", juce::File::getSpecialLocation (juce::File::userDocumentsDirectory), "*.xml");
-
-    auto file = chooser.getResult();
-    audioProcessor.loadPreset (file);  // Calls your processor’s loadPreset
-}
-
-void GuitarToolsAudioProcessorEditor::presetSelected()
-{
-    auto selectedId = presetBox.getSelectedId();
-    if (selectedId > 0)
-    {
-        auto presetName = presetBox.getItemText(selectedId - 1);
-        auto presetFile = getPresetFolder().getChildFile(presetName + ".xml");
-        audioProcessor.loadPreset(presetFile);
-    }
-}
-
-void GuitarToolsAudioProcessorEditor::refreshPresetList()
-{
-    presetBox.clear();
-    auto presetFolder = getPresetFolder();
-    presetFolder.createDirectory();
-    
-    auto files = presetFolder.findChildFiles(juce::File::TypesOfFileToFind::findFiles, false);
-    
-    int index = 1;
-    for (auto& file : files)
-    {
-        presetBox.addItem(file.getFileNameWithoutExtension(), index);
-        ++index;
-    }
-}
-
-juce::File GuitarToolsAudioProcessorEditor::getPresetFolder()
-{
-    return juce::File::getSpecialLocation(juce::File::userDocumentsDirectory).getChildFile("GuitarTools/Presets");
-}
 
 void GuitarToolsAudioProcessorEditor::timerCallback()
 {
