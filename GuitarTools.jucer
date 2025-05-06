@@ -23,8 +23,8 @@
               file="Source/GUI/HorizontalSlider.h"/>
         <FILE id="kIgT3A" name="ImgButton.cpp" compile="1" resource="0" file="Source/GUI/ImgButton.cpp"/>
         <FILE id="JCxqpl" name="ImgButton.h" compile="0" resource="0" file="Source/GUI/ImgButton.h"/>
-        <FILE id="EeHyKt" name="LevelMeter.cpp" compile="1" resource="0" file="Source/GUI/LevelMeter.cpp"/>
-        <FILE id="afcFSp" name="LevelMeter.h" compile="0" resource="0" file="Source/GUI/LevelMeter.h"/>
+        <FILE id="xlsjV2" name="LevelMeter.cpp" compile="1" resource="0" file="Source/GUI/LevelMeter.cpp"/>
+        <FILE id="VLjNTU" name="LevelMeter.h" compile="0" resource="0" file="Source/GUI/LevelMeter.h"/>
         <FILE id="YSESCh" name="LookAndFeel.cpp" compile="1" resource="0" file="Source/GUI/LookAndFeel.cpp"/>
         <FILE id="sWnK03" name="LookAndFeel.h" compile="0" resource="0" file="Source/GUI/LookAndFeel.h"/>
         <FILE id="Jt29Ft" name="Measurement.h" compile="0" resource="0" file="Source/GUI/Measurement.h"/>

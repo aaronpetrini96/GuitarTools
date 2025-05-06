@@ -5,7 +5,7 @@
 GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
-
+    
     
 //  PRESENCE BUTTONS
     presence1.onClick = [this]() {setPresenceFreq(0);};
@@ -101,8 +101,14 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
 //    addAndMakeVisible(inputGain);
     setLookAndFeel(&mainLF);
 
-    setSize (500, 360);
-
+    
+    addAndMakeVisible(inputMeter);
+    addAndMakeVisible(outputMeter);
+    
+    
+    setSize (700, 360);
+    auto bounds1 = getLocalBounds();
+    startTimerHz(30);
 }
 
 GuitarToolsAudioProcessorEditor::~GuitarToolsAudioProcessorEditor()
@@ -127,13 +133,15 @@ void GuitarToolsAudioProcessorEditor::paint (juce::Graphics& g)
 
 void GuitarToolsAudioProcessorEditor::resized()
 {
+    
     auto bounds = getLocalBounds();
     int y = bounds.getHeight() * 0.015;
     int height = bounds.getHeight() * 0.9;
     auto leftMargin = bounds.getWidth() * 0.02;
     auto presenceButtonsSize = leftMargin * 2.5;
     auto groupWidth = bounds.getWidth() * 0.245;
-//    auto inputGainHeight = bounds.getHeight() * JUCE_LIVE_CONSTANT(0.95);
+    
+    
 //    BYPASS
     bypassButton.setBounds(bounds.getWidth() * 0.93, bounds.getHeight() * 0.932, bypassButton.getWidth(), bypassButton.getHeight());
 //    inputGain.setBounds(bounds.getWidth() * JUCE_LIVE_CONSTANT(0.23), inputGainHeight, inputGain.getWidth(), inputGain.getHeight());
@@ -164,7 +172,6 @@ void GuitarToolsAudioProcessorEditor::resized()
     compBypassButton.setTopLeftPosition(middleButtonsGroup, mudButton.getBottom() * 1.18);
     compThresholdSlider.setBounds(resoFreqSlider.getX(),compBypassButton.getBottom() * 0.965 , compThresholdSlider.getWidth(), compThresholdSlider.getHeight());
     compRatioBox.setBounds(compBypassButton.getX() * 1.5, highCutSlopeBox.getY(), lowCutSlopeBox.getWidth(), lowCutSlopeBox.getHeight());
-    
 
 //    SHELF GROUP
     highShelfGainKnob.setTopLeftPosition((shelfFiltersGroup.getWidth() - highShelfGainKnob.getWidth()) * 0.5, leftMargin * 1.5);
@@ -177,10 +184,9 @@ void GuitarToolsAudioProcessorEditor::resized()
     depth2.setBounds((depth1.getX() + depth1.getWidth()) + leftMargin, lowShelfGainKnob.getHeight() * 2.59, presenceButtonsSize, presenceButtonsSize);
     depth3.setBounds((depth2.getX() + depth1.getWidth()) + leftMargin, lowShelfGainKnob.getHeight() * 2.59, presenceButtonsSize, presenceButtonsSize);
     
-//   PRESET BOX
+    //   PRESET BOX
     presetBox.setBounds(bounds.getWidth() * 0.31, bypassButton.getY(), resoFreqSlider.getWidth() * 0.8, highCutSlopeBox.getHeight());
     savePresetButton.setBounds(presetBox.getRight() * 1.05, bypassButton.getY(), presetBox.getWidth() * 0.5, presetBox.getHeight());
-    
 }
 
 //==============================================================================
@@ -224,7 +230,6 @@ void GuitarToolsAudioProcessorEditor::setDepthFreq(const int& index)
         updateDepthButtons(index);
     }
 }
-
 
 void GuitarToolsAudioProcessorEditor::updatePresenceButtons(const int& selectedIndex)
 {
@@ -313,4 +318,20 @@ void GuitarToolsAudioProcessorEditor::refreshPresetList()
 juce::File GuitarToolsAudioProcessorEditor::getPresetFolder()
 {
     return juce::File::getSpecialLocation(juce::File::userDocumentsDirectory).getChildFile("GuitarTools/Presets");
+}
+
+void GuitarToolsAudioProcessorEditor::timerCallback()
+{
+    auto rmsToNormalized = [](float level)
+    {
+        auto dB = juce::Decibels::gainToDecibels(level, -60.f);
+        return juce::jmap(dB, -60.f, 0.f, 0.f, 1.f);
+    };
+    
+    int numIn = audioProcessor.getTotalNumInputChannels();
+    int numOut = audioProcessor.getTotalNumOutputChannels();
+    
+    inputMeter.setLevels(rmsToNormalized(audioProcessor.getInputLevelL()), rmsToNormalized(audioProcessor.getInputLevelR()), numIn);
+    
+    outputMeter.setLevels(rmsToNormalized(audioProcessor.getOutputLevelL()), rmsToNormalized(audioProcessor.getOutputLevelR()), numOut);
 }

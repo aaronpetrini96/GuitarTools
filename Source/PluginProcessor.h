@@ -90,6 +90,11 @@ public:
     void loadPreset(const juce::File& file);
     void loadDefaultPreset();
     //==============================================================================
+    float getInputLevelL() const { return inputLevelL; }
+    float getInputLevelR() const { return inputLevelR; }
+    float getOutputLevelL() const { return outputLevelL; }
+    float getOutputLevelR() const { return outputLevelR; }
+    //==============================================================================
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState treeState {*this, nullptr, "Parameters", createParameterLayout()};
     
@@ -222,6 +227,9 @@ private:
     
 //    juce::dsp::Oscillator<float> osc;
     juce::dsp::Gain<float> gain;
+    
+    
+    float inputLevelL{0.f}, inputLevelR {0.f}, outputLevelL{0.f}, outputLevelR{0.f};
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GuitarToolsAudioProcessor)

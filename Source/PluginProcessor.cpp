@@ -189,6 +189,9 @@ void GuitarToolsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
 // Save a dry copy before processing
     juce::AudioBuffer<float> dryBuffer;
     dryBuffer.makeCopyOf(buffer);
+    
+    inputLevelL = buffer.getRMSLevel(0, 0, buffer.getNumSamples());
+    inputLevelR = buffer.getNumChannels() > 1 ? buffer.getRMSLevel(1, 0, buffer.getNumSamples()) : inputLevelL;
 
 //========================    COMP part    ========================
     updateCompState();
@@ -298,6 +301,10 @@ void GuitarToolsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
             wet[sample] = wet[sample] * mix + dry[sample] * (1.0f - mix);
         }
     }
+    
+    
+    outputLevelL = buffer.getRMSLevel(0, 0, buffer.getNumSamples());
+    outputLevelR = buffer.getNumChannels() > 1 ? buffer.getRMSLevel(1, 0, buffer.getNumSamples()) : outputLevelL;
 }
 
 //==============================================================================

@@ -16,11 +16,12 @@
 #include "GUI/Button.h"
 #include "GUI/HorizontalSlider.h"
 #include "GUI/ImgButton.h"
+#include "GUI/LevelMeter.h"
 
 //==============================================================================
 /**
 */
-class GuitarToolsAudioProcessorEditor  : public juce::AudioProcessorEditor
+class GuitarToolsAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::Timer
 //private juce::Timer
 {
 public:
@@ -30,6 +31,7 @@ public:
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
+    void timerCallback() override;
     
 private:
 
@@ -92,7 +94,10 @@ private:
     void refreshPresetList();
     juce::File getPresetFolder();
     std::unique_ptr<juce::FileChooser> fileChooser;
-
+    
+    LevelMeter inputMeter;
+    LevelMeter outputMeter;
+    
         
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GuitarToolsAudioProcessorEditor)
 };
