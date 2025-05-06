@@ -23,7 +23,7 @@ GuitarToolsAudioProcessor::GuitarToolsAudioProcessor()
 #endif
 {
     linkCompParameters();
-    loadDefaultPreset();
+//    loadDefaultPreset();
 }
 
 GuitarToolsAudioProcessor::~GuitarToolsAudioProcessor()
@@ -141,7 +141,7 @@ void GuitarToolsAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     rightChain.prepare(spec);
     updateFilters();
 //==============================================================================
-    loadDefaultPreset();
+//    loadDefaultPreset();
 }
 
 void GuitarToolsAudioProcessor::releaseResources()
@@ -404,8 +404,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout GuitarToolsAudioProcessor::c
 //    ========== OVERSAMPLING ===========
     layout.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID("Oversampling", 1), "Oversampling", juce::StringArray {"Off", "2x", "4x", "8x"}, 0));
     
-    
-    
     //==============================================================================
     //==============================================================================
 //    COMPRESSOR
@@ -620,8 +618,6 @@ void GuitarToolsAudioProcessor::linkCompParameters()
 
 void GuitarToolsAudioProcessor::updateCompState()
 {
-    
-   
     compressors[1].updateCompressorSettings();
     
     auto lowMidCutoffFreq = lowMidCrossover -> get();
