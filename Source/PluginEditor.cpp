@@ -111,7 +111,7 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
     addAndMakeVisible(outputMeter);
     
     
-    setSize (500, 360);
+    setSize (500, 400);
 //    startTimerHz(30);
 }
 
@@ -132,7 +132,7 @@ void GuitarToolsAudioProcessorEditor::paint (juce::Graphics& g)
     g.setColour (juce::Colours::white.withAlpha(0.9f));
     g.setFont(16.f);
     g.getCurrentFont();
-    g.drawFittedText("GUITAR TOOLS v2", -25, getLocalBounds().getHeight() * 0.932, 200, 20, juce::Justification::centred, 1);
+    g.drawFittedText("GUITAR TOOLS v2", -25, getLocalBounds().getHeight() * 0.83, 200, 20, juce::Justification::centred, 1);
 }
 
 void GuitarToolsAudioProcessorEditor::resized()
@@ -140,18 +140,18 @@ void GuitarToolsAudioProcessorEditor::resized()
     
     auto bounds = getLocalBounds();
     int y = bounds.getHeight() * 0.015;
-    int height = bounds.getHeight() * 0.9;
+    int height = bounds.getHeight() * 0.8;
     auto leftMargin = bounds.getWidth() * 0.02;
     auto presenceButtonsSize = leftMargin * 2.5;
     auto groupWidth = bounds.getWidth() * 0.245;
-    
+    auto lastLineY = bounds.getHeight() * 0.83;
     
 //    BYPASS
-    bypassButton.setBounds(bounds.getWidth() * 0.93, bounds.getHeight() * 0.932, bypassButton.getWidth(), bypassButton.getHeight());
-//    inputGain.setBounds(bounds.getWidth() * JUCE_LIVE_CONSTANT(0.23), inputGainHeight, inputGain.getWidth(), inputGain.getHeight());
+    bypassButton.setBounds(bounds.getWidth() * 0.93, lastLineY, bypassButton.getWidth(), bypassButton.getHeight());
+
     
 //    OVERSAMPLING
-    oversamplingBox.setBounds(bounds.getWidth() * 0.75, bounds.getHeight() * 0.932, oversamplingBox.getWidth(), bypassButton.getHeight());
+    oversamplingBox.setBounds(bounds.getWidth() * 0.75, lastLineY, oversamplingBox.getWidth(), bypassButton.getHeight());
 
 //    GROUPS
     cutFiltersGroup.setBounds(leftMargin, y, groupWidth, height);
@@ -188,8 +188,8 @@ void GuitarToolsAudioProcessorEditor::resized()
     depth3.setBounds((depth2.getX() + depth1.getWidth()) + leftMargin, lowShelfGainKnob.getHeight() * 2.59, presenceButtonsSize, presenceButtonsSize);
     
     //   PRESET BOX
-    presetBox.setBounds(bounds.getWidth() * 0.31, bypassButton.getY(), resoFreqSlider.getWidth() * 0.8, highCutSlopeBox.getHeight());
-    savePresetButton.setBounds(presetBox.getRight() * 1.05, bypassButton.getY(), presetBox.getWidth() * 0.5, presetBox.getHeight());
+    presetBox.setBounds(bounds.getWidth() * 0.31, lastLineY, resoFreqSlider.getWidth() * 0.8, highCutSlopeBox.getHeight());
+    savePresetButton.setBounds(presetBox.getRight() * 1.05, lastLineY, presetBox.getWidth() * 0.5, presetBox.getHeight());
 }
 
 //==============================================================================

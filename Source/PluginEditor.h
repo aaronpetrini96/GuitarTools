@@ -46,8 +46,6 @@ private:
     RotaryKnob lowShelfGainKnob {"Depth", audioProcessor.treeState, juce::ParameterID("Depth Gain", 1), " dB", true};
     RotaryKnob highShelfGainKnob {"Presence", audioProcessor.treeState, juce::ParameterID("Presence Gain", 1), " dB", true};
     
-    HorizontalSlider inputGain {"InGain", audioProcessor.treeState, juce::ParameterID("Comp Gain In",1), " dB"};
-    HorizontalSlider outputGain {"OutGain", audioProcessor.treeState, juce::ParameterID("Comp Gain Out",1), " dB"};
     
     juce::TextButton presence1 {"1"};
     juce::TextButton presence2 {"2"};
@@ -91,6 +89,12 @@ private:
 
     LevelMeter inputMeter;
     LevelMeter outputMeter;
+    
+    
+    
+    
+//    HorizontalSlider inputGain {"InGain", audioProcessor.treeState, juce::ParameterID("Comp Gain In",1), " dB"};
+//    HorizontalSlider outputGain {"OutGain", audioProcessor.treeState, juce::ParameterID("Comp Gain Out",1), " dB"};
     
     
         
