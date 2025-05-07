@@ -14,39 +14,6 @@
 #include "LookAndFeel.h"
 
 
-struct LookAndFeelHelpers
-{
-    
-    LookAndFeelHelpers() = delete;
-
-    static juce::Colour createBaseColour (juce::Colour buttonColour,
-                                    bool hasKeyboardFocus,
-                                    bool shouldDrawButtonAsHighlighted,
-                                    bool shouldDrawButtonAsDown) noexcept
-    {
-        const float sat = hasKeyboardFocus ? 1.3f : 0.9f;
-        const juce::Colour baseColour (buttonColour.withMultipliedSaturation (sat));
-
-        if (shouldDrawButtonAsDown)        return baseColour.contrasting (0.2f);
-        if (shouldDrawButtonAsHighlighted) return baseColour.contrasting (0.1f);
-
-        return baseColour;
-    }
-
-    static juce::TextLayout layoutTooltipText (const juce::String& text, juce::Colour colour) noexcept
-    {
-        const float tooltipFontSize = 13.0f;
-        const int maxToolTipWidth = 400;
-
-        juce::AttributedString s;
-        s.setJustification (juce::Justification::centred);
-        s.append (text, juce::Font (tooltipFontSize, juce::Font::FontStyleFlags::bold), colour);
-
-        juce::TextLayout tl;
-        tl.createLayoutWithBalancedLineLengths (s, (float) maxToolTipWidth);
-        return tl;
-    }
-};
 
 
 //==============================================================================
@@ -56,11 +23,12 @@ HorizontalSlider::HorizontalSlider(const juce::String& text,
                                    const juce::String& suffix,
                                    bool drawFromMiddle)
 : attachment(apvts, parameterID.getParamID(), slider)
+
 {
     slider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
     slider.setColour(juce::Slider::ColourIds::thumbColourId, juce::Colours::red.withAlpha(0.8f));
     slider.setColour(juce::Slider::ColourIds::trackColourId, juce::Colours::grey.withAlpha(0.3f));
-    
+    slider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId, juce::Colours::transparentBlack);
     
     slider.setTextBoxStyle(juce::Slider::TextBoxLeft, false, 60, 20);
     if (suffix != "") {
@@ -69,22 +37,19 @@ HorizontalSlider::HorizontalSlider(const juce::String& text,
     slider.setBounds(0, 0, 150, 30);
     addAndMakeVisible(slider);
      
-    label.setText(text, juce::NotificationType::dontSendNotification);
-    label.setJustificationType(juce::Justification::horizontallyCentred);
-    label.setBorderSize(juce::BorderSize<int>{0, 0, 2, 0});
-    label.attachToComponent(&slider, false);
-    addAndMakeVisible(label);
+//    label.setText(text, juce::NotificationType::dontSendNotification);
+//    label.setJustificationType(juce::Justification::horizontallyCentred);
+//    label.setColour(juce::Label::ColourIds::outlineColourId, juce::Colours::transparentBlack);
+//    label.setBorderSize(juce::BorderSize<int>{0, 0, 2, 0});
+//    label.attachToComponent(&slider, false);
+//    addAndMakeVisible(label);
     
     setSize(150, 30);
+//    setLookAndFeel(RotaryKnobLookAndFeel::get());
+
     
-    setLookAndFeel(RotaryKnobLookAndFeel::get());
-    
-    float pi = juce::MathConstants<float>::pi;
     slider.setRotaryParameters(1.25f*pi, 2.75f*pi, true);
-    
     slider.getProperties().set("drawFromMiddle", drawFromMiddle);
-    
-   
 
 }
 
@@ -122,6 +87,8 @@ void HorizontalSlider::drawLinearSlider (juce::Graphics& g, int x, int y, int wi
     if (style == juce::Slider::LinearBar || style == juce::Slider::LinearBarVertical)
     {
         const bool isMouseOver = slider.isMouseOverOrDragging() && slider.isEnabled();
+        
+        
 
         drawLinearSliderOutline (g, x, y, width, height, style, slider);
     }
@@ -217,5 +184,7 @@ void HorizontalSlider::drawLinearSliderThumb (juce::Graphics& g, int x, int y, i
   
     
 }
+
+
 
 

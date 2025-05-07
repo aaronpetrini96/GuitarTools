@@ -11,7 +11,7 @@
 #pragma once
 
 #include <JuceHeader.h>
-
+#include "LookAndFeelHelpers.h"
 
 //==============================================================================
 /*
@@ -50,11 +50,15 @@ public:
     
     
     
+    
+    
     juce::Slider slider;
     juce::AudioProcessorValueTreeState::SliderAttachment attachment;
     juce::Label label;
 
+
 private:
+    const float pi = juce::MathConstants<float>::pi;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HorizontalSlider)
 };

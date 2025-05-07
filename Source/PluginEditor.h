@@ -79,9 +79,9 @@ private:
     Button mudButton {"Kill Mud", audioProcessor.treeState, juce::ParameterID("Mud Bypass", 1)};
     Button compBypassButton {"Control Low-End", audioProcessor.treeState, juce::ParameterID("Comp Bypass",1)};
     
-    HorizontalSlider resoFreqSlider {"Frequency", audioProcessor.treeState, juce::ParameterID("Reso Freq", 1), " Hz"};
-    HorizontalSlider mudFreqSlider {"Frequency", audioProcessor.treeState, juce::ParameterID("Mud Freq", 1), " Hz"};
-    HorizontalSlider compThresholdSlider {"Threshold", audioProcessor.treeState, juce::ParameterID("Threshold", 1), " dB"};
+    HorizontalSlider resoFreqSlider {"Freqy", audioProcessor.treeState, juce::ParameterID("Reso Freq", 1), " Hz"};
+    HorizontalSlider mudFreqSlider {"Freq", audioProcessor.treeState, juce::ParameterID("Mud Freq", 1), " Hz"};
+    HorizontalSlider compThresholdSlider {"Thresh", audioProcessor.treeState, juce::ParameterID("Threshold", 1), " dB"};
     
     ImgButton bypassButton{"Bypass Button", audioProcessor.treeState, juce::ParameterID("Plugin Bypass",1)};
     

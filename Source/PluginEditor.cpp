@@ -81,6 +81,10 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
     };
     addAndMakeVisible(buttonsGroup);
     
+    
+    
+    
+    
     shelfFiltersGroup.setText("Expression");
     shelfFiltersGroup.setTextLabelPosition(juce::Justification::horizontallyCentred);
     
@@ -149,7 +153,6 @@ void GuitarToolsAudioProcessorEditor::resized()
 //    OVERSAMPLING
     oversamplingBox.setBounds(bounds.getWidth() * 0.75, bounds.getHeight() * 0.932, oversamplingBox.getWidth(), bypassButton.getHeight());
 
-    
 //    GROUPS
     cutFiltersGroup.setBounds(leftMargin, y, groupWidth, height);
     shelfFiltersGroup.setBounds(bounds.getWidth() * 0.74, y, groupWidth, height);

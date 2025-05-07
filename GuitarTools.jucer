@@ -32,6 +32,8 @@
         <FILE id="VLjNTU" name="LevelMeter.h" compile="0" resource="0" file="Source/GUI/LevelMeter.h"/>
         <FILE id="YSESCh" name="LookAndFeel.cpp" compile="1" resource="0" file="Source/GUI/LookAndFeel.cpp"/>
         <FILE id="sWnK03" name="LookAndFeel.h" compile="0" resource="0" file="Source/GUI/LookAndFeel.h"/>
+        <FILE id="j7q4cS" name="LookAndFeelHelpers.h" compile="0" resource="0"
+              file="Source/GUI/LookAndFeelHelpers.h"/>
         <FILE id="Jt29Ft" name="Measurement.h" compile="0" resource="0" file="Source/GUI/Measurement.h"/>
         <FILE id="OHkdWh" name="OptionBox.cpp" compile="1" resource="0" file="Source/GUI/OptionBox.cpp"/>
         <FILE id="USyMVc" name="OptionBox.h" compile="0" resource="0" file="Source/GUI/OptionBox.h"/>
