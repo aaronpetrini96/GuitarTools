@@ -176,6 +176,28 @@ bool GuitarToolsAudioProcessor::isBusesLayoutSupported (const BusesLayout& layou
 }
 #endif
 
+
+bool clipDetection(juce::AudioBuffer<float>& buffer)
+{
+// CLIP DETECTION
+    bool isClipping = false;
+    for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
+    {
+        auto* samples = buffer.getReadPointer(channel);
+        for (int i = 0; i < buffer.getNumSamples(); ++i)
+        {
+            auto sampleAbs = std::abs(samples[i]);
+            if (sampleAbs > 1.0f)
+            {
+                isClipping = true;
+                break; // you can also break out of both loops early if you want
+            }
+        }
+    }
+    
+    return isClipping;
+}
+
 void GuitarToolsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
@@ -185,24 +207,29 @@ void GuitarToolsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-    
+
+        
 // Save a dry copy before processing
     juce::AudioBuffer<float> dryBuffer;
     dryBuffer.makeCopyOf(buffer);
     
     inputLevelL = buffer.getRMSLevel(0, 0, buffer.getNumSamples());
     inputLevelR = buffer.getNumChannels() > 1 ? buffer.getRMSLevel(1, 0, buffer.getNumSamples()) : inputLevelL;
+    
+
 
 //========================    COMP part    ========================
     updateCompState();
     
     leftChannelFifo.update(buffer);
-    if (buffer.getNumChannels() > 1) {
+    if (buffer.getNumChannels() > 1)
         rightChannelFifo.update(buffer);
-    }
-//    rightChannelFifo.update(buffer);
     
     applyGain(buffer, inputGain);
+    
+//    INPUT CLIP DETECTION
+    if (clipDetection(buffer))
+        clipFlagIn.store(true); // atomic flag to be safe for GUI thread
     
     splitBands(buffer);
     compressors[1].process(filterBuffers[1]); //only process midband
@@ -220,7 +247,7 @@ void GuitarToolsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     for(size_t i{0}; i < compressors.size(); ++i)
         addFilterBand(buffer, filterBuffers[i]);
     
-    applyGain(buffer, outputGain);
+//    applyGain(buffer, outputGain);
     
 //========================    EQ part    ========================
     auto chainSettings = getChainSettings(treeState);
@@ -228,53 +255,10 @@ void GuitarToolsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     updateFilters();
     
     juce::dsp::AudioBlock<float> block {buffer};
-    
-//    if (chainSettings.pluginBypass != 0)
-//    {
-//
-//        return; // true bypass: leave buffer unprocessed
-//    }
-    
+       
     // Update smoothed bypass target
     bool bypassActive = (chainSettings.pluginBypass != 0);
     smoothedBypassValue.setTargetValue(bypassActive ? 0.0f : 1.0f);
-    
-//    Oversampling
-    /*
-    
-    if (oversampling)
-    {
-        auto oversampledBlock = oversampling->processSamplesUp(block);
-
-        auto leftBlock = oversampledBlock.getSingleChannelBlock(0);
-        auto rightBlock = oversampledBlock.getSingleChannelBlock(1);
-
-        juce::dsp::ProcessContextReplacing<float> leftContext {leftBlock};
-        juce::dsp::ProcessContextReplacing<float> rightContext {rightBlock};
-
-        leftChain.process(leftContext);
-        rightChain.process(rightContext);
-
-//        oversampling->processSamplesDown(block);
-        // Apply downsampling with anti-aliasing filters to both left and right channels
-//        oversampling->processSamplesDown(leftBlock);
-//        oversampling->processSamplesDown(rightBlock);
-    }
-    else
-    {
-        auto leftBlock = block.getSingleChannelBlock(0);
-        auto rightBlock = block.getSingleChannelBlock(1);
-
-        juce::dsp::ProcessContextReplacing<float> leftContext {leftBlock};
-        juce::dsp::ProcessContextReplacing<float> rightContext {rightBlock};
-
-        leftChain.process(leftContext);
-        rightChain.process(rightContext);
-        
-    }
-     
-     
-     */
     
     
     auto leftBlock = block.getSingleChannelBlock(0);
@@ -288,6 +272,7 @@ void GuitarToolsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     leftChain.process(leftContext);
     rightChain.process(rightContext);
     
+    applyGain(buffer, outputGain);
     
     // Smooth crossfade
     for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
@@ -302,6 +287,9 @@ void GuitarToolsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
         }
     }
     
+//    OUTPUT CLIP DETECTION
+    if (clipDetection(buffer))
+        clipFlagOut.store(true); // atomic flag to be safe for GUI thread
     
     outputLevelL = buffer.getRMSLevel(0, 0, buffer.getNumSamples());
     outputLevelR = buffer.getNumChannels() > 1 ? buffer.getRMSLevel(1, 0, buffer.getNumSamples()) : outputLevelL;
@@ -408,7 +396,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout GuitarToolsAudioProcessor::c
     //==============================================================================
 //    COMPRESSOR
     
-    auto gainRange = juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f);
+    auto gainRange = juce::NormalisableRange<float>(-60.f, 12.f, 0.1f, 1.f);
     layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("Comp Gain In", 1),"Comp Gain In", gainRange, 0.f));
     layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("Comp Gain Out", 1),"Comp Gain Out", gainRange, 0.f));
     
@@ -532,40 +520,40 @@ void GuitarToolsAudioProcessor::updateHighCutFilters(const ChainSettings& chainS
 
 void GuitarToolsAudioProcessor::updateOversampling(const ChainSettings &chainSettings)
 {
-//    auto factor = chainSettings.oversamplingFactor;
-//    int newFactor = 1;
-//
-//    switch (factor) {
-//        case Off: newFactor = 1; break;
-//        case x2:  newFactor = 2; break;
-//        case x4:  newFactor = 4; break;
-//        case x8:  newFactor = 8; break;
-//    }
-//
-//    // Only recreate oversampling object if factor has changed
-//    if (newFactor != oversamplingFactor)
-//    {
-//        oversamplingFactor = newFactor;
-//        std::cout << "New Oversampling Factor: " << oversamplingFactor << "x" << std::endl;
-//
-//        // Calculate number of stages (each stage doubles the rate)
-//        int numStages = 0;
-//        if (oversamplingFactor == 2) numStages = 1;
-//        else if (oversamplingFactor == 4) numStages = 2;
-//        else if (oversamplingFactor == 8) numStages = 3;
-//        else numStages = 0; // Off or 1x
-//
-//        // Recreate oversampling object
-//        oversampling = std::make_unique<juce::dsp::Oversampling<float>>(
-//            2, // 2 channels (stereo)
-//            numStages, // number of stages
-//            juce::dsp::Oversampling<float>::filterHalfBandPolyphaseIIR
-//        );
-//
-//        // Initialize buffers with expected block size (use safe default)
-//        oversampling->reset();
-//        oversampling->initProcessing((size_t) getBlockSize());
-//    }
+    auto factor = chainSettings.oversamplingFactor;
+    int newFactor = 1;
+
+    switch (factor) {
+        case Off: newFactor = 1; break;
+        case x2:  newFactor = 2; break;
+        case x4:  newFactor = 4; break;
+        case x8:  newFactor = 8; break;
+    }
+
+    // Only recreate oversampling object if factor has changed
+    if (newFactor != oversamplingFactor)
+    {
+        oversamplingFactor = newFactor;
+        std::cout << "New Oversampling Factor: " << oversamplingFactor << "x" << std::endl;
+
+        // Calculate number of stages (each stage doubles the rate)
+        int numStages = 0;
+        if (oversamplingFactor == 2) numStages = 1;
+        else if (oversamplingFactor == 4) numStages = 2;
+        else if (oversamplingFactor == 8) numStages = 3;
+        else numStages = 0; // Off or 1x
+
+        // Recreate oversampling object
+        oversampling = std::make_unique<juce::dsp::Oversampling<float>>(
+            2, // 2 channels (stereo)
+            numStages, // number of stages
+            juce::dsp::Oversampling<float>::filterHalfBandPolyphaseIIR
+        );
+
+        // Initialize buffers with expected block size (use safe default)
+        oversampling->reset();
+        oversampling->initProcessing((size_t) getBlockSize());
+    }
 }
 
 //==============================================================================

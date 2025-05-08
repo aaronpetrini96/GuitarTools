@@ -107,7 +107,8 @@ public:
     CompressorBand& midBandComp = compressors[1];
     CompressorBand& highBandComp = compressors[2];
 
-    
+    std::atomic<bool> clipFlagIn { false };
+    std::atomic<bool> clipFlagOut { false };
     
 private:
     
@@ -230,6 +231,8 @@ private:
     
     
     float inputLevelL{0.f}, inputLevelR {0.f}, outputLevelL{0.f}, outputLevelR{0.f};
+    
+    
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GuitarToolsAudioProcessor)

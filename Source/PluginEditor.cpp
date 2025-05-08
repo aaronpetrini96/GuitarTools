@@ -6,18 +6,18 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
     : AudioProcessorEditor (&p), audioProcessor (p), presetManager(p, presetBox)
 {
     
-    
+    startTimerHz(30);
 //  PRESENCE BUTTONS
-    presence1.onClick = [this]() {setPresenceFreq(0);};
-    presence2.onClick = [this]() {setPresenceFreq(1);};
-    presence3.onClick = [this]() {setPresenceFreq(2);};
+    presence1.onClick = [this]() {setShelfFilterFreq("Presence Freq", 0);};
+    presence2.onClick = [this]() {setShelfFilterFreq("Presence Freq", 1);};
+    presence3.onClick = [this]() {setShelfFilterFreq("Presence Freq", 2);};
     int indexPresence = static_cast<int>(audioProcessor.treeState.getRawParameterValue("Presence Freq")->load());
     updatePresenceButtons(indexPresence);
     
 //  DEPTH BUTTONS
-    depth1.onClick = [this]() {setDepthFreq(0);};
-    depth2.onClick = [this]() {setDepthFreq(1);};
-    depth3.onClick = [this]() {setDepthFreq(2);};
+    depth1.onClick = [this]() {setShelfFilterFreq("Depth Freq", 0);};
+    depth2.onClick = [this]() {setShelfFilterFreq("Depth Freq", 1);};
+    depth3.onClick = [this]() {setShelfFilterFreq("Depth Freq", 2);};
     int indexDepth = static_cast<int>(audioProcessor.treeState.getRawParameterValue("Depth Freq")->load());
     updateDepthButtons(indexDepth);
     
@@ -26,6 +26,11 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
     savePresetButton.setColour(juce::TextButton::ColourIds::buttonOnColourId, juce::Colour(100, 100, 110).darker(0.5f));
     addAndMakeVisible(savePresetButton);
     savePresetButton.onClick = [this] {presetManager.savePreset();};
+    
+//    IN-OUT GAIN
+    addAndMakeVisible(inputGainSlider);
+    addAndMakeVisible(outputGainSlider);
+
     
 //  PRESET DROPDOWN MENU
     presetBox.setTextWhenNothingSelected("Select Preset");
@@ -61,12 +66,15 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
     buttonsGroup.addAndMakeVisible(resoFreqSlider);
     resoFreqSlider.setVisible(resoButton.getToggleState());
     resoButton.onClick = [this](){resoFreqSlider.setVisible(resoButton.getToggleState());};
+    
     buttonsGroup.addAndMakeVisible(mudButton);
     buttonsGroup.addAndMakeVisible(mudFreqSlider);
     mudFreqSlider.setVisible(mudButton.getToggleState());
     mudButton.onClick = [this](){mudFreqSlider.setVisible(mudButton.getToggleState());};
+    
     buttonsGroup.addAndMakeVisible(compBypassButton);
     buttonsGroup.addAndMakeVisible(compThresholdSlider);
+    
     compThresholdSlider.setVisible(compBypassButton.getToggleState());
     compRatioBox.setColour(juce::ComboBox::ColourIds::backgroundColourId, juce::Colour(100, 100, 110).darker(0.5f));
     compRatioBox.setColour(juce::ComboBox::ColourIds::outlineColourId, juce::Colours::transparentBlack);
@@ -82,24 +90,17 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
     addAndMakeVisible(buttonsGroup);
     
     
-    
-    
-    
     shelfFiltersGroup.setText("Expression");
     shelfFiltersGroup.setTextLabelPosition(juce::Justification::horizontallyCentred);
     
     shelfFiltersGroup.addAndMakeVisible(highShelfGainKnob);
-    for (int i {0}; i < presenceButtons.size(); ++i)
-    {
-        setShelfFilterButtonStyle(*presenceButtons[i]);
-        shelfFiltersGroup.addAndMakeVisible(*presenceButtons[i]);
-    }
     shelfFiltersGroup.addAndMakeVisible(lowShelfGainKnob);
-    for (int i {0}; i < depthButtons.size(); ++i)
+    for (int i {0}; i < shelfFiltersButtons.size(); ++i)
     {
-        setShelfFilterButtonStyle(*depthButtons[i]);
-        shelfFiltersGroup.addAndMakeVisible(*depthButtons[i]);
+        setShelfFilterButtonStyle(*shelfFiltersButtons[i]);
+        shelfFiltersGroup.addAndMakeVisible(*shelfFiltersButtons[i]);
     }
+    
     addAndMakeVisible(shelfFiltersGroup);
     
     addAndMakeVisible(bypassButton);
@@ -107,12 +108,12 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
     setLookAndFeel(&mainLF);
 
     
-    addAndMakeVisible(inputMeter);
-    addAndMakeVisible(outputMeter);
+//    addAndMakeVisible(inputMeter);
+//    addAndMakeVisible(outputMeter);
     
     
     setSize (500, 400);
-//    startTimerHz(30);
+    
 }
 
 GuitarToolsAudioProcessorEditor::~GuitarToolsAudioProcessorEditor()
@@ -133,11 +134,12 @@ void GuitarToolsAudioProcessorEditor::paint (juce::Graphics& g)
     g.setFont(16.f);
     g.getCurrentFont();
     g.drawFittedText("GUITAR TOOLS v2", -25, getLocalBounds().getHeight() * 0.83, 200, 20, juce::Justification::centred, 1);
+    
+    clipLight(g);
 }
 
 void GuitarToolsAudioProcessorEditor::resized()
 {
-    
     auto bounds = getLocalBounds();
     int y = bounds.getHeight() * 0.015;
     int height = bounds.getHeight() * 0.8;
@@ -148,10 +150,16 @@ void GuitarToolsAudioProcessorEditor::resized()
     
 //    BYPASS
     bypassButton.setBounds(bounds.getWidth() * 0.93, lastLineY, bypassButton.getWidth(), bypassButton.getHeight());
-
-    
+//   PRESET BOX
+    presetBox.setBounds(bounds.getWidth() * 0.31, lastLineY, resoFreqSlider.getWidth() * 0.8, highCutSlopeBox.getHeight());
+    savePresetButton.setBounds(presetBox.getRight() * 1.05, lastLineY, presetBox.getWidth() * 0.5, presetBox.getHeight());
 //    OVERSAMPLING
     oversamplingBox.setBounds(bounds.getWidth() * 0.75, lastLineY, oversamplingBox.getWidth(), bypassButton.getHeight());
+    
+//    IN OUT GAIN
+    inputGainSlider.setBounds(8.0, lastLineY * 1.05, inputGainSlider.getWidth(), inputGainSlider.getHeight());
+    outputGainSlider.setBounds(bounds.getWidth() * 0.585, lastLineY * 1.05, outputGainSlider.getWidth(), outputGainSlider.getHeight());
+    
 
 //    GROUPS
     cutFiltersGroup.setBounds(leftMargin, y, groupWidth, height);
@@ -165,7 +173,7 @@ void GuitarToolsAudioProcessorEditor::resized()
     highCutSlopeBox.setTopLeftPosition((cutFiltersGroup.getWidth()-highCutSlopeBox.getWidth()) * 0.5, lowCutFreqKnob.getHeight() * 2.6);
     
 //    BUTTONS GROUP
-    auto middleButtonsGroup = (buttonsGroup.getWidth() - resoButton.getWidth()) * 0.5;
+    auto middleButtonsGroup = (buttonsGroup.getWidth() - resoButton.getWidth()) * 0.53;
     resoButton.setTopLeftPosition(middleButtonsGroup, leftMargin * 2.1);
     resoFreqSlider.setBounds(resoButton.getX() * 0.6, resoButton.getBottom() * 0.89, 150, 30);
     
@@ -187,9 +195,7 @@ void GuitarToolsAudioProcessorEditor::resized()
     depth2.setBounds((depth1.getX() + depth1.getWidth()) + leftMargin, lowShelfGainKnob.getHeight() * 2.59, presenceButtonsSize, presenceButtonsSize);
     depth3.setBounds((depth2.getX() + depth1.getWidth()) + leftMargin, lowShelfGainKnob.getHeight() * 2.59, presenceButtonsSize, presenceButtonsSize);
     
-    //   PRESET BOX
-    presetBox.setBounds(bounds.getWidth() * 0.31, lastLineY, resoFreqSlider.getWidth() * 0.8, highCutSlopeBox.getHeight());
-    savePresetButton.setBounds(presetBox.getRight() * 1.05, lastLineY, presetBox.getWidth() * 0.5, presetBox.getHeight());
+    
 }
 
 //==============================================================================
@@ -208,29 +214,20 @@ void GuitarToolsAudioProcessorEditor::setShelfFilterButtonStyle(juce::TextButton
 
 }
 
-void GuitarToolsAudioProcessorEditor::setPresenceFreq(const int& index)
-{
-    if (auto* param = dynamic_cast<juce::AudioParameterChoice*>(audioProcessor.treeState.getParameter("Presence Freq")))
-    {
-        param->beginChangeGesture();
-        choiceCount = static_cast<float>(param->choices.size() - 1);
-        normalizedValue = static_cast<float>(index) / choiceCount;
-        param->setValueNotifyingHost(normalizedValue);
-        param->endChangeGesture();
-        updatePresenceButtons(index);
-    }
-}
 
-void GuitarToolsAudioProcessorEditor::setDepthFreq(const int& index)
+void GuitarToolsAudioProcessorEditor::setShelfFilterFreq(const juce::String& parameterName, const int& index)
 {
-    if (auto* param = dynamic_cast<juce::AudioParameterChoice*>(audioProcessor.treeState.getParameter("Depth Freq")))
+    if (auto* param = dynamic_cast<juce::AudioParameterChoice*>(audioProcessor.treeState.getParameter(parameterName)))
     {
         param->beginChangeGesture();
         choiceCount = static_cast<float>(param->choices.size() - 1);
         normalizedValue = static_cast<float>(index) / choiceCount;
         param->setValueNotifyingHost(normalizedValue);
         param->endChangeGesture();
-        updateDepthButtons(index);
+        if(parameterName == "Presence Freq")
+            updatePresenceButtons(index);
+        if(parameterName == "Depth Freq")
+            updateDepthButtons(index);
     }
 }
 
@@ -266,6 +263,52 @@ void GuitarToolsAudioProcessorEditor::timerCallback()
     int numOut = audioProcessor.getTotalNumOutputChannels();
     
     inputMeter.setLevels(rmsToNormalized(audioProcessor.getInputLevelL()), rmsToNormalized(audioProcessor.getInputLevelR()), numIn);
-    
     outputMeter.setLevels(rmsToNormalized(audioProcessor.getOutputLevelL()), rmsToNormalized(audioProcessor.getOutputLevelR()), numOut);
+    
+// === Clipping light logic ===
+    
+    bool inClipping = audioProcessor.clipFlagIn.exchange(false);
+    bool outClipping = audioProcessor.clipFlagOut.exchange(false);
+    if (inClipping)
+        inputGainSlider.setClippingStatus(true);
+    if (outClipping)
+        outputGainSlider.setClippingStatus(true);
+    
+    if (inClipping == true || outClipping == true)
+    {
+        isClippingLightOn = true;
+        clipLightHoldCounter = 15; // light stays on for 15 ticks
+        clipPopScale = 1.3f;       // pop to 1.3x size when clipping
+    }
+    
+    if (clipLightHoldCounter > 0)
+    {
+        --clipLightHoldCounter;
+        
+        // Gradually shrink pop effect back to normal
+        clipPopScale -= 0.02f;
+        if (clipPopScale < 1.0f)
+            clipPopScale = 1.0f;
+    }
+    else
+    {
+        inputGainSlider.setClippingStatus(false);
+        outputGainSlider.setClippingStatus(false);
+        isClippingLightOn = false;
+        clipPopScale = 1.0f;
+    }
+    
+    repaint(); // triggers paint() to draw updated light
+    
+}
+
+void GuitarToolsAudioProcessorEditor::clipLight(juce::Graphics& g)
+{
+    juce::Colour activeColor = juce::Colours::red.withAlpha(0.9f);
+    juce::Colour offColor = juce::Colours::green.withAlpha(0.75f);
+    juce::Colour currentColor = isClippingLightOn ? activeColor : offColor;
+   
+    g.setColour(currentColor);
+    g.setFont(juce::Font(16.0f * clipPopScale, juce::Font::bold));
+    g.drawFittedText("CLIP", getWidth() * 0.3, getHeight() * 0.92, 200, 20, juce::Justification::centred, 1);
 }

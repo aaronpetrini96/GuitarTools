@@ -15,6 +15,7 @@
 #include "GUI/OptionBox.h"
 #include "GUI/Button.h"
 #include "GUI/HorizontalSlider.h"
+#include "GUI/GainSlider.h"
 #include "GUI/ImgButton.h"
 #include "GUI/LevelMeter.h"
 #include "Utils/PresetManager.h"
@@ -22,7 +23,7 @@
 /**
 */
 class GuitarToolsAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::Timer
-//private juce::Timer
+
 {
 public:
     GuitarToolsAudioProcessorEditor (GuitarToolsAudioProcessor&);
@@ -31,12 +32,12 @@ public:
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
-    void timerCallback() override;
+    void clipLight(juce::Graphics& g);
     
 private:
 
     GuitarToolsAudioProcessor& audioProcessor;
-    
+    void timerCallback() override;
     juce::GroupComponent cutFiltersGroup, buttonsGroup, shelfFiltersGroup;
     MainLookAndFeel mainLF;
     
@@ -46,22 +47,14 @@ private:
     RotaryKnob lowShelfGainKnob {"Depth", audioProcessor.treeState, juce::ParameterID("Depth Gain", 1), " dB", true};
     RotaryKnob highShelfGainKnob {"Presence", audioProcessor.treeState, juce::ParameterID("Presence Gain", 1), " dB", true};
     
+    juce::TextButton presence1 {"1"}, presence2 {"2"}, presence3 {"3"}, depth1 {"1"}, depth2 {"2"}, depth3 {"3"};
+    std::vector<juce::TextButton*> shelfFiltersButtons = {&presence1, &presence2, &presence3, &depth1, &depth2, &depth3};
     
-    juce::TextButton presence1 {"1"};
-    juce::TextButton presence2 {"2"};
-    juce::TextButton presence3 {"3"};
-    std::vector<juce::TextButton*> presenceButtons = {&presence1, &presence2, &presence3};
-    float choiceCount {0}, normalizedValue{0};
-    void setPresenceFreq(const int&);
     void updatePresenceButtons(const int&);
-    void setShelfFilterButtonStyle(juce::TextButton&);
-    
-    juce::TextButton depth1 {"1"};
-    juce::TextButton depth2 {"2"};
-    juce::TextButton depth3 {"3"};
-    std::vector<juce::TextButton*> depthButtons = {&depth1, &depth2, &depth3};
-    void setDepthFreq(const int&);
     void updateDepthButtons(const int&);
+    void setShelfFilterButtonStyle(juce::TextButton&);
+    float choiceCount {0}, normalizedValue{0};
+    void setShelfFilterFreq(const juce::String&, const int&);
 
     std::vector<juce::String> slopeOptions {"12 dB/Oct", "24 dB/Oct", "36 dB/Oct", "48 dB/Oct"};
     OptionBox lowCutSlopeBox {slopeOptions, audioProcessor.treeState, juce::ParameterID("LowCut Slope", 1)};
@@ -77,8 +70,8 @@ private:
     Button mudButton {"Kill Mud", audioProcessor.treeState, juce::ParameterID("Mud Bypass", 1)};
     Button compBypassButton {"Control Low-End", audioProcessor.treeState, juce::ParameterID("Comp Bypass",1)};
     
-    HorizontalSlider resoFreqSlider {"Freqy", audioProcessor.treeState, juce::ParameterID("Reso Freq", 1), " Hz"};
-    HorizontalSlider mudFreqSlider {"Freq", audioProcessor.treeState, juce::ParameterID("Mud Freq", 1), " Hz"};
+    HorizontalSlider resoFreqSlider {"Reso Freq", audioProcessor.treeState, juce::ParameterID("Reso Freq", 1), " Hz"};
+    HorizontalSlider mudFreqSlider {"Mud Freq", audioProcessor.treeState, juce::ParameterID("Mud Freq", 1), " Hz"};
     HorizontalSlider compThresholdSlider {"Thresh", audioProcessor.treeState, juce::ParameterID("Threshold", 1), " dB"};
     
     ImgButton bypassButton{"Bypass Button", audioProcessor.treeState, juce::ParameterID("Plugin Bypass",1)};
@@ -89,14 +82,14 @@ private:
 
     LevelMeter inputMeter;
     LevelMeter outputMeter;
+
+    GainSlider inputGainSlider {"Input Gain", audioProcessor.treeState, juce::ParameterID("Comp Gain In", 1), " dB [IN]", juce::Slider::TextEntryBoxPosition::TextBoxRight};
+    GainSlider outputGainSlider {"Output Gain", audioProcessor.treeState, juce::ParameterID("Comp Gain Out", 1), " dB [OUT]", juce::Slider::TextEntryBoxPosition::TextBoxLeft};
+
     
-    
-    
-    
-//    HorizontalSlider inputGain {"InGain", audioProcessor.treeState, juce::ParameterID("Comp Gain In",1), " dB"};
-//    HorizontalSlider outputGain {"OutGain", audioProcessor.treeState, juce::ParameterID("Comp Gain Out",1), " dB"};
-    
-    
+    bool isClippingLightOn = false;
+    int clipLightHoldCounter = 0; // counts down in timer ticks
+    float clipPopScale = 1.0f; 
         
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GuitarToolsAudioProcessorEditor)
 };

@@ -22,6 +22,8 @@
       <GROUP id="{713458A5-CBDF-5E76-6944-B0118BBEE9AC}" name="GUI">
         <FILE id="xgfSKr" name="Button.cpp" compile="1" resource="0" file="Source/GUI/Button.cpp"/>
         <FILE id="QJBtPO" name="Button.h" compile="0" resource="0" file="Source/GUI/Button.h"/>
+        <FILE id="peJuLc" name="GainSlider.cpp" compile="1" resource="0" file="Source/GUI/GainSlider.cpp"/>
+        <FILE id="ZU0idd" name="GainSlider.h" compile="0" resource="0" file="Source/GUI/GainSlider.h"/>
         <FILE id="Ww4xca" name="HorizontalSlider.cpp" compile="1" resource="0"
               file="Source/GUI/HorizontalSlider.cpp"/>
         <FILE id="YPFrEm" name="HorizontalSlider.h" compile="0" resource="0"

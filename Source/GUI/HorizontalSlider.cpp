@@ -8,13 +8,7 @@
   ==============================================================================
 */
 
-
-#include <JuceHeader.h>
 #include "HorizontalSlider.h"
-#include "LookAndFeel.h"
-
-
-
 
 //==============================================================================
 HorizontalSlider::HorizontalSlider(const juce::String& text,

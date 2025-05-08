@@ -12,7 +12,7 @@
 
 #include <JuceHeader.h>
 #include "LookAndFeelHelpers.h"
-
+#include "LookAndFeel.h"
 //==============================================================================
 /*
 */
