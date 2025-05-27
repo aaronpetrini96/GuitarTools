@@ -30,8 +30,6 @@
               file="Source/GUI/HorizontalSlider.h"/>
         <FILE id="kIgT3A" name="ImgButton.cpp" compile="1" resource="0" file="Source/GUI/ImgButton.cpp"/>
         <FILE id="JCxqpl" name="ImgButton.h" compile="0" resource="0" file="Source/GUI/ImgButton.h"/>
-        <FILE id="xlsjV2" name="LevelMeter.cpp" compile="1" resource="0" file="Source/GUI/LevelMeter.cpp"/>
-        <FILE id="VLjNTU" name="LevelMeter.h" compile="0" resource="0" file="Source/GUI/LevelMeter.h"/>
         <FILE id="YSESCh" name="LookAndFeel.cpp" compile="1" resource="0" file="Source/GUI/LookAndFeel.cpp"/>
         <FILE id="sWnK03" name="LookAndFeel.h" compile="0" resource="0" file="Source/GUI/LookAndFeel.h"/>
         <FILE id="j7q4cS" name="LookAndFeelHelpers.h" compile="0" resource="0"
@@ -43,8 +41,6 @@
         <FILE id="KWPlNq" name="RotaryKnob.h" compile="0" resource="0" file="Source/GUI/RotaryKnob.h"/>
       </GROUP>
       <GROUP id="{BEEC5DC6-4F3B-B210-B68B-1200B7B78109}" name="Assets">
-        <FILE id="hSVEAh" name="back.png" compile="0" resource="1" file="Source/Assets/back.png"/>
-        <FILE id="bDnFg0" name="back_d.png" compile="0" resource="1" file="Source/Assets/back_d.png"/>
         <FILE id="OInA6A" name="but_small_rec_off.png" compile="0" resource="1"
               file="Source/Assets/but_small_rec_off.png"/>
         <FILE id="fyxvEF" name="but_small_rec_on.png" compile="0" resource="1"
@@ -84,7 +80,8 @@
     <XCODE_MAC targetFolder="Builds/MacOSX">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" targetName="GuitarTools"/>
-        <CONFIGURATION isDebug="0" name="Release" targetName="GuitarTools"/>
+        <CONFIGURATION isDebug="0" name="Release" targetName="GuitarTools" osxArchitecture="64BitIntel"
+                       customXcodeFlags="GCC_GENERATE_DEBUGGING_SYMBOLS=YES, DEBUG_INFORMATION_FORMAT=dwarf-with-dsym"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_audio_basics" path="../JUCE/modules"/>

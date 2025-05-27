@@ -253,18 +253,7 @@ void GuitarToolsAudioProcessorEditor::updateDepthButtons(const int& selectedInde
 
 void GuitarToolsAudioProcessorEditor::timerCallback()
 {
-    auto rmsToNormalized = [](float level)
-    {
-        auto dB = juce::Decibels::gainToDecibels(level, -60.f);
-        return juce::jmap(dB, -60.f, 0.f, 0.f, 1.f);
-    };
-    
-    int numIn = audioProcessor.getTotalNumInputChannels();
-    int numOut = audioProcessor.getTotalNumOutputChannels();
-    
-    inputMeter.setLevels(rmsToNormalized(audioProcessor.getInputLevelL()), rmsToNormalized(audioProcessor.getInputLevelR()), numIn);
-    outputMeter.setLevels(rmsToNormalized(audioProcessor.getOutputLevelL()), rmsToNormalized(audioProcessor.getOutputLevelR()), numOut);
-    
+   
 // === Clipping light logic ===
     
     bool inClipping = audioProcessor.clipFlagIn.exchange(false);
