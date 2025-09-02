@@ -15,9 +15,16 @@ public:
     void resized() override;
     
     juce::ComboBox comboBox;
-    juce::AudioProcessorValueTreeState::ComboBoxAttachment attachment;
+//    juce::AudioProcessorValueTreeState::ComboBoxAttachment attachment;
     juce::Label label;
 
 private:
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> attachment;
+    juce::AudioProcessorValueTreeState& apvtsRef;
+    juce::ParameterID paramID;
+    std::vector<juce::String> optionStrings;
+    
+    void restoreSavedValue();
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OptionBox)
 };

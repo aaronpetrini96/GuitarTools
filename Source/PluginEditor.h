@@ -17,7 +17,6 @@
 #include "GUI/HorizontalSlider.h"
 #include "GUI/GainSlider.h"
 #include "GUI/ImgButton.h"
-//#include "GUI/LevelMeter.h"
 #include "Utils/PresetManager.h"
 //==============================================================================
 /**
@@ -79,9 +78,6 @@ private:
     PresetManager presetManager;
     juce::ComboBox presetBox;
     juce::TextButton savePresetButton {"Save"};
-
-//    LevelMeter inputMeter;
-//    LevelMeter outputMeter;
 
     GainSlider inputGainSlider {"Input Gain", audioProcessor.treeState, juce::ParameterID("Comp Gain In", 1), " dB [IN]", juce::Slider::TextEntryBoxPosition::TextBoxRight};
     GainSlider outputGainSlider {"Output Gain", audioProcessor.treeState, juce::ParameterID("Comp Gain Out", 1), " dB [OUT]", juce::Slider::TextEntryBoxPosition::TextBoxLeft};

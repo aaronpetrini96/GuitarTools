@@ -12,7 +12,9 @@ public:
     void loadPreset();
     void presetSelected();
     void refreshPresetList();
-    
+    int getItemIdForText(const juce::ComboBox&, const juce::String&);
+    void applyPresetSelection(const juce::String&);
+    void displayCurrentPresetName();
     
 private:
     juce::File getPresetFolder();

@@ -37,8 +37,12 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
     presetBox.setColour(juce::ComboBox::ColourIds::backgroundColourId, juce::Colour(100, 100, 110).darker(0.5f));
     presetBox.setColour(juce::ComboBox::ColourIds::outlineColourId, juce::Colours::transparentBlack);
     presetBox.setLookAndFeel(ComboBoxLookAndFeel::get());
-    presetBox.onChange = [this]() {presetManager.presetSelected();};
+    presetBox.onChange = [this]()
+    {
+        presetManager.presetSelected();
+    };
     presetManager.refreshPresetList();
+    presetManager.displayCurrentPresetName();
     addAndMakeVisible(presetBox);
     
 //    OVERSAMPLING
@@ -46,7 +50,7 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
 //    oversamplingBox.setColour(juce::ComboBox::ColourIds::outlineColourId, juce::Colours::transparentBlack);
 //    oversamplingBox.setLookAndFeel(ComboBoxLookAndFeel::get());
 //    oversamplingBox.setSize(60, 25);
-    addAndMakeVisible(oversamplingBox);
+//    addAndMakeVisible(oversamplingBox);
     
 //    GROUPS
     cutFiltersGroup.setText("Cut Filters");
@@ -104,12 +108,9 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
     addAndMakeVisible(shelfFiltersGroup);
     
     addAndMakeVisible(bypassButton);
-//    addAndMakeVisible(inputGain);
+
     setLookAndFeel(&mainLF);
 
-    
-//    addAndMakeVisible(inputMeter);
-//    addAndMakeVisible(outputMeter);
     
     
     setSize (500, 400);
@@ -209,9 +210,7 @@ void GuitarToolsAudioProcessorEditor::setShelfFilterButtonStyle(juce::TextButton
     button.setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentBlack);
     button.setColour(juce::TextButton::ColourIds::textColourOnId, juce::Colours::white);
     button.setColour(juce::TextButton::ColourIds::textColourOffId, juce::Colours::white);
-    
     button.setSize(25, 25);
-
 }
 
 

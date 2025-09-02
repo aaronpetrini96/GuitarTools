@@ -89,6 +89,8 @@ public:
     void savePreset(const juce::File& file);
     void loadPreset(const juce::File& file);
     void loadDefaultPreset();
+    void setCurrentPresetName(const juce::String& name) {currentPresetName = name;}
+    juce::String getCurrentPresetName() const {return currentPresetName;}
     //==============================================================================
     float getInputLevelL() const { return inputLevelL; }
     float getInputLevelR() const { return inputLevelR; }
@@ -109,6 +111,8 @@ public:
 
     std::atomic<bool> clipFlagIn { false };
     std::atomic<bool> clipFlagOut { false };
+    
+    juce::String currentPresetName;
     
 private:
     

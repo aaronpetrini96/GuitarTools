@@ -23,12 +23,10 @@ GuitarToolsAudioProcessor::GuitarToolsAudioProcessor()
 #endif
 {
     linkCompParameters();
-//    loadDefaultPreset();
 }
 
 GuitarToolsAudioProcessor::~GuitarToolsAudioProcessor()
 {
-//    oversampling.reset();
 }
 
 //==============================================================================
@@ -133,15 +131,11 @@ void GuitarToolsAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     
 //==============================================================================
     
-//    updateOversampling(getChainSettings(treeState));
-//    if (oversampling)
-//        oversampling->initProcessing(static_cast<size_t>(samplesPerBlock));
     spec.numChannels = 1;
     leftChain.prepare(spec);
     rightChain.prepare(spec);
     updateFilters();
 //==============================================================================
-//    loadDefaultPreset();
 }
 
 void GuitarToolsAudioProcessor::releaseResources()
@@ -311,6 +305,7 @@ juce::AudioProcessorEditor* GuitarToolsAudioProcessor::createEditor()
 void GuitarToolsAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     auto state = treeState.copyState();
+    state.setProperty("CurrentPresetName", currentPresetName, nullptr);
     std::unique_ptr<juce::XmlElement> xml (state.createXml());
     copyXmlToBinary(*xml, destData);
 }
@@ -321,6 +316,8 @@ void GuitarToolsAudioProcessor::setStateInformation (const void* data, int sizeI
     if (xml && xml->hasTagName(treeState.state.getType()))
     {
         juce::ValueTree state = juce::ValueTree::fromXml(*xml);
+        if (auto* presetNameProp = state.getPropertyPointer("CurrentPresetName"))
+            currentPresetName = presetNameProp->toString(); // restore preset name
         treeState.replaceState(state);
         updateFilters();
     }
@@ -339,6 +336,8 @@ void GuitarToolsAudioProcessor::loadPreset(const juce::File& file)
     if (xml && xml->hasTagName(treeState.state.getType()))
     {
         juce::ValueTree state = juce::ValueTree::fromXml(*xml);
+        if (auto* presetNameProp = state.getPropertyPointer("CurrentPresetName"))
+            currentPresetName = presetNameProp->toString(); // restore preset name
         treeState.replaceState(state);
         updateFilters();
     }
@@ -370,7 +369,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout GuitarToolsAudioProcessor::c
 
 //    ========== HIGH/LOW SHELVE  ===========
     juce::StringArray presenceFreqArray {"4.5 kHz", "6 kHz", "8 kHz"};
-    layout.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID("Presence Freq", 1), "Presence Freq", presenceFreqArray, 0));
+    layout.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID("Presence Freq", 1), "Presence Freq", presenceFreqArray, 1));
     layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID("Presence Gain", 1), "Presence Gain", juce::NormalisableRange<float>(-12.f, 12.f, 0.1f, 1.f),3.f));
     
 
