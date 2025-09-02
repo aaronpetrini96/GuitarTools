@@ -44,10 +44,16 @@ void OptionBox::restoreSavedValue()
 {
     if (auto* param = apvtsRef.getParameter(paramID.getParamID()))
     {
+        // Get the normalized 0.0–1.0 parameter value
         float normalized = param->getValue();
-        int selectedId = static_cast<int>(normalized * optionStrings.size()) + 1;
-        if (selectedId > 4) { selectedId = 4; }
+
+        // Map to 0-based index, clamp to valid range
+        int index = static_cast<int>(normalized * (optionStrings.size() - 1) + 0.5f); // +0.5f for rounding
+        index = juce::jlimit(0, static_cast<int>(optionStrings.size() - 1), index);
+
+        // ComboBox IDs start at 1, so add 1
+        int selectedId = index + 1;
+
         comboBox.setSelectedId(selectedId, juce::dontSendNotification);
     }
 }
-

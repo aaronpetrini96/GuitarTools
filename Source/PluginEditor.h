@@ -63,7 +63,7 @@ private:
     OptionBox oversamplingBox {oversamplingOptions, audioProcessor.treeState, juce::ParameterID("Oversampling",1)};
     
     std::vector<juce::String> ratioChoices = {"1:1","1.4:1","2:1","3:1","4:1","8:1","10:1","20:1","50:1","100:1"};
-    OptionBox compRatioBox {ratioChoices, audioProcessor.treeState, juce::ParameterID("Ratio",1)};
+    OptionBox compRatioBox {ratioChoices, audioProcessor.treeState, juce::ParameterID("Ratio", 1)};
     
     Button resoButton {"Tame Resonance", audioProcessor.treeState, juce::ParameterID("Reso Bypass", 1)};
     Button mudButton {"Kill Mud", audioProcessor.treeState, juce::ParameterID("Mud Bypass", 1)};
