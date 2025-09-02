@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="UwZ0mG" name="GuitarTools" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" companyName="Aaron Petrini"
-              cppLanguageStandard="latest" version="1.1">
+              cppLanguageStandard="latest" version="1.2">
   <MAINGROUP id="dcQ1Q0" name="GuitarTools">
     <GROUP id="{9FE85DB9-FEF9-D00B-7F4E-44BB06F723AF}" name="Source">
       <GROUP id="{AF0FF884-09AE-5B30-72CC-B504ECF1BABE}" name="Utils">
