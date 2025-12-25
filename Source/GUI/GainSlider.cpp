@@ -18,28 +18,23 @@ GainSlider::GainSlider(const juce::String& text,
 : attachment(apvts, parameterID.getParamID(), slider)
 
 {
-
     slider.setSliderStyle(juce::Slider::LinearHorizontal);
     slider.setTextBoxIsEditable(true);
-    slider.setTextBoxStyle(textBoxPosition, false, 80, 45);
+    slider.setTextBoxStyle(textBoxPosition, false, 90, 20);
     slider.setColour(juce::Slider::ColourIds::textBoxOutlineColourId,juce::Colours::transparentBlack);
     slider.setColour(juce::Slider::ColourIds::trackColourId, juce::Colours::grey.withAlpha(0.3f));
     slider.setColour(juce::Slider::ColourIds::thumbColourId, juce::Colours::red.withAlpha(0.8f));
     if (suffix != "") {
         slider.setTextValueSuffix(suffix);
     }
-    setSize(200, 60);
-    slider.setBounds(0, 0, 200, 60);
+    setSize(200, 20);
+    slider.setBounds(0, 0, 200, 20);
     addAndMakeVisible(slider);
 
     setLookAndFeel(RotaryKnobLookAndFeel::get());
     
     // Initialize clipping flag to false (no clipping by default)
     isClipping = false;
-    
-//    slider.setRotaryParameters(1.25f*pi, 2.75f*pi, true);
-//    slider.getProperties().set("drawFromMiddle", drawFromMiddle);
-
 }
 
 GainSlider::~GainSlider()
@@ -53,9 +48,7 @@ void GainSlider::paint (juce::Graphics& g)
     
     // Customizing the text color based on clipping status
     juce::Colour textColor = isClipping ? juce::Colours::red.withAlpha(0.9f) : juce::Colours::white;
-    
     slider.setColour(juce::Slider::ColourIds::textBoxTextColourId, textColor);
-
 }
 
 void GainSlider::resized()

@@ -19,12 +19,9 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
     void setClippingStatus(bool);
-    
-    
+        
     juce::Slider slider;
     juce::AudioProcessorValueTreeState::SliderAttachment attachment;
-
-
 
 private:
 //    const float pi = juce::MathConstants<float>::pi;

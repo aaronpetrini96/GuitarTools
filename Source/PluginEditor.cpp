@@ -5,8 +5,8 @@
 GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p), presetManager(p, presetBox)
 {
-    
     startTimerHz(30);
+    
 //  PRESENCE BUTTONS
     presence1.onClick = [this]() {setShelfFilterFreq("Presence Freq", 0);};
     presence2.onClick = [this]() {setShelfFilterFreq("Presence Freq", 1);};
@@ -52,7 +52,7 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
 //    oversamplingBox.setSize(60, 25);
 //    addAndMakeVisible(oversamplingBox);
     
-//    GROUPS
+//   CUT FILTERS GROUP
     cutFiltersGroup.setText("Cut Filters");
     cutFiltersGroup.setTextLabelPosition(juce::Justification::horizontallyCentred);
     
@@ -62,7 +62,7 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
     cutFiltersGroup.addAndMakeVisible(highCutSlopeBox);
     addAndMakeVisible(cutFiltersGroup);
     
-    
+//    BUTTONS GROUP
     buttonsGroup.setText("Magic Buttons");
     buttonsGroup.setTextLabelPosition(juce::Justification::horizontallyCentred);
     
@@ -93,10 +93,9 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
     };
     addAndMakeVisible(buttonsGroup);
     
-    
+//    SHELF FILTERS GROUP
     shelfFiltersGroup.setText("Expression");
     shelfFiltersGroup.setTextLabelPosition(juce::Justification::horizontallyCentred);
-    
     shelfFiltersGroup.addAndMakeVisible(highShelfGainKnob);
     shelfFiltersGroup.addAndMakeVisible(lowShelfGainKnob);
     for (int i {0}; i < shelfFiltersButtons.size(); ++i)
@@ -107,13 +106,12 @@ GuitarToolsAudioProcessorEditor::GuitarToolsAudioProcessorEditor (GuitarToolsAud
     
     addAndMakeVisible(shelfFiltersGroup);
     
+//    BYPASS BUTTON
     addAndMakeVisible(bypassButton);
-
+    
+//==============================================================================
     setLookAndFeel(&mainLF);
-
-    
-    
-    setSize (500, 400);
+    setSize (500, 380);
     
 }
 
@@ -121,9 +119,6 @@ GuitarToolsAudioProcessorEditor::~GuitarToolsAudioProcessorEditor()
 {
     setLookAndFeel(nullptr);
 }
-//==============================================================================
-
-
 
 //==============================================================================
 void GuitarToolsAudioProcessorEditor::paint (juce::Graphics& g)
@@ -134,7 +129,7 @@ void GuitarToolsAudioProcessorEditor::paint (juce::Graphics& g)
     g.setColour (juce::Colours::white.withAlpha(0.9f));
     g.setFont(16.f);
     g.getCurrentFont();
-    g.drawFittedText("GUITAR TOOLS v2", -25, getLocalBounds().getHeight() * 0.83, 200, 20, juce::Justification::centred, 1);
+    g.drawFittedText("GuitarTools v1.2", -25, getLocalBounds().getHeight() * 0.8657, 200, 20, juce::Justification::centred, 1);
     
     clipLight(g);
 }
@@ -142,36 +137,38 @@ void GuitarToolsAudioProcessorEditor::paint (juce::Graphics& g)
 void GuitarToolsAudioProcessorEditor::resized()
 {
     auto bounds = getLocalBounds();
-    int y = bounds.getHeight() * 0.015;
-    int height = bounds.getHeight() * 0.8;
-    auto leftMargin = bounds.getWidth() * 0.02;
+    auto boundsWidth = bounds.getWidth();
+    auto boundsHeight = bounds.getHeight();
+    int y = boundsHeight * 0.015;
+    int height = boundsHeight * 0.84;
+    auto leftMargin = boundsWidth * 0.02;
     auto presenceButtonsSize = leftMargin * 2.5;
-    auto groupWidth = bounds.getWidth() * 0.245;
-    auto lastLineY = bounds.getHeight() * 0.83;
+    auto groupWidth = boundsWidth * 0.245;
+    auto lastLineY = boundsHeight * 0.87;
     
 //    BYPASS
-    bypassButton.setBounds(bounds.getWidth() * 0.93, lastLineY, bypassButton.getWidth(), bypassButton.getHeight());
+    bypassButton.setBounds(boundsWidth * 0.93, lastLineY, bypassButton.getWidth(), bypassButton.getHeight());
+    
 //   PRESET BOX
-    presetBox.setBounds(bounds.getWidth() * 0.31, lastLineY, resoFreqSlider.getWidth() * 0.8, highCutSlopeBox.getHeight());
+    presetBox.setBounds(boundsWidth * 0.31, lastLineY, resoFreqSlider.getWidth() * 0.8, highCutSlopeBox.getHeight());
     savePresetButton.setBounds(presetBox.getRight() * 1.05, lastLineY, presetBox.getWidth() * 0.5, presetBox.getHeight());
 //    OVERSAMPLING
-    oversamplingBox.setBounds(bounds.getWidth() * 0.75, lastLineY, oversamplingBox.getWidth(), bypassButton.getHeight());
+//    oversamplingBox.setBounds(boundsWidth * 0.75, lastLineY, oversamplingBox.getWidth(), bypassButton.getHeight());
     
 //    IN OUT GAIN
-    inputGainSlider.setBounds(8.0, lastLineY * 1.05, inputGainSlider.getWidth(), inputGainSlider.getHeight());
-    outputGainSlider.setBounds(bounds.getWidth() * 0.585, lastLineY * 1.05, outputGainSlider.getWidth(), outputGainSlider.getHeight());
+    inputGainSlider.setBounds(8.0, lastLineY * 1.076, inputGainSlider.getWidth(), inputGainSlider.getHeight());
+    outputGainSlider.setBounds(boundsWidth * 0.585, inputGainSlider.getY(), outputGainSlider.getWidth(), outputGainSlider.getHeight());
     
-
 //    GROUPS
     cutFiltersGroup.setBounds(leftMargin, y, groupWidth, height);
-    shelfFiltersGroup.setBounds(bounds.getWidth() * 0.74, y, groupWidth, height);
+    shelfFiltersGroup.setBounds(boundsWidth * 0.74, y, groupWidth, height);
     buttonsGroup.setBounds(cutFiltersGroup.getRight() + leftMargin, y, shelfFiltersGroup.getX() - cutFiltersGroup.getRight() - leftMargin * 2, height);
     
 //    CUT FILTER GROUP
-    lowCutFreqKnob.setTopLeftPosition((cutFiltersGroup.getWidth()-lowCutFreqKnob.getWidth()) * 0.5, leftMargin * 1.5);
+    lowCutFreqKnob.setTopLeftPosition((cutFiltersGroup.getWidth() - lowCutFreqKnob.getWidth()) * 0.5, leftMargin * 1.5);
     highCutFreqKnob.setBounds(lowCutFreqKnob.getX(), lowCutFreqKnob.getHeight() * 1.5, lowCutFreqKnob.getWidth(), lowCutFreqKnob.getHeight());
-    lowCutSlopeBox.setTopLeftPosition((cutFiltersGroup.getWidth()-lowCutSlopeBox.getWidth()) * 0.5, lowCutFreqKnob.getHeight() * 1.2);
-    highCutSlopeBox.setTopLeftPosition((cutFiltersGroup.getWidth()-highCutSlopeBox.getWidth()) * 0.5, lowCutFreqKnob.getHeight() * 2.6);
+    lowCutSlopeBox.setTopLeftPosition((cutFiltersGroup.getWidth() - lowCutSlopeBox.getWidth()) * 0.5, lowCutFreqKnob.getHeight() * 1.2);
+    highCutSlopeBox.setTopLeftPosition((cutFiltersGroup.getWidth() - highCutSlopeBox.getWidth()) * 0.5, lowCutFreqKnob.getHeight() * 2.6);
     
 //    BUTTONS GROUP
     auto middleButtonsGroup = (buttonsGroup.getWidth() - resoButton.getWidth()) * 0.53;
@@ -195,8 +192,6 @@ void GuitarToolsAudioProcessorEditor::resized()
     depth1.setBounds(lowShelfGainKnob.getX() * 0.52, lowShelfGainKnob.getHeight() * 2.59, presenceButtonsSize, presenceButtonsSize);
     depth2.setBounds((depth1.getX() + depth1.getWidth()) + leftMargin, lowShelfGainKnob.getHeight() * 2.59, presenceButtonsSize, presenceButtonsSize);
     depth3.setBounds((depth2.getX() + depth1.getWidth()) + leftMargin, lowShelfGainKnob.getHeight() * 2.59, presenceButtonsSize, presenceButtonsSize);
-    
-    
 }
 
 //==============================================================================
@@ -248,13 +243,9 @@ void GuitarToolsAudioProcessorEditor::updateDepthButtons(const int& selectedInde
 //==============================================================================
 //==============================================================================
 
-
-
 void GuitarToolsAudioProcessorEditor::timerCallback()
 {
-   
 // === Clipping light logic ===
-    
     bool inClipping = audioProcessor.clipFlagIn.exchange(false);
     bool outClipping = audioProcessor.clipFlagOut.exchange(false);
     if (inClipping)
@@ -297,6 +288,6 @@ void GuitarToolsAudioProcessorEditor::clipLight(juce::Graphics& g)
     juce::Colour currentColor = isClippingLightOn ? activeColor : offColor;
    
     g.setColour(currentColor);
-    g.setFont(juce::Font(16.0f * clipPopScale, juce::Font::bold));
-    g.drawFittedText("CLIP", getWidth() * 0.3, getHeight() * 0.92, 200, 20, juce::Justification::centred, 1);
+    g.setFont(juce::Font(juce::FontOptions(16.f * clipPopScale, juce::Font::FontStyleFlags::bold)));
+    g.drawFittedText("CLIP", getWidth() * 0.3, getHeight() * 0.937, 200, 20, juce::Justification::centred, 1);
 }
